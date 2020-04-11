@@ -1,0 +1,6 @@
+1: Python -m install venv env
+2: Source env/Scripts/Activate
+3: pip install Django
+4: pip install Djangorestframework
+4: Django-admin startprojecr ProjecrName(Kametee)
+5: Django-admin Startapp APPname(KameteeApp)
