@@ -5,6 +5,6 @@ from Kameteeapp.API.views import *
 
 
 urlpatterns = [
-    path('/',RegisterUser,name='RegisterUser')
+    path('',RegisterUser,name='RegisterUser')
     
 ]
