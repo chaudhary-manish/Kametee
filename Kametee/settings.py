@@ -25,7 +25,9 @@ SECRET_KEY = 'wzr1=(w*xy0mtz6*_063z(*sr@@aao8xql$^6_+bq$e+l*i21_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['13.127.1.188']
+#ALLOWED_HOSTS = ['13.127.1.188']
+
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -73,14 +75,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Kametee.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'database-1',
+        'USER': 'postgres',
+        'PASSWORD': 'billioner',
+        'HOST': 'database-1.cs7ccwk5yqnp.ap-south-1.rds.amazonaws.com',
+        'PORT': '5432',
     }
 }
 
