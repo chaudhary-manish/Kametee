@@ -83,18 +83,33 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Kametee.wsgi.application'
 
-# Database
-# https://docs.djangoproject.com/en/3.0/ref/settings/#databases
+# # Database
+# # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'Kametee',
-        'USER': 'postgres',
+        'USER': 'Kametee',
         'PASSWORD': 'billioner',
-        'HOST': 'database-2.cs7ccwk5yqnp.ap-south-1.rds.amazonaws.com',
+        'HOST': 'kametee-database.cs7ccwk5yqnp.ap-south-1.rds.amazonaws.com',
         'PORT': '5432',
     }
 }
+
+
+# Database
+# https://docs.djangoproject.com/en/3.0/ref/settings/#databases
+# DATABASES = {
+#     'default': {
+#          'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'kamteedemo',
+#         'USER': 'postgres',
+#         'PASSWORD': 'root',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
+
 
 
 # Password validation
