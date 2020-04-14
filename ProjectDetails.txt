@@ -4,3 +4,4 @@
 4: pip install Djangorestframework
 4: Django-admin startprojecr ProjecrName(Kametee)
 5: Django-admin Startapp APPname(KameteeApp)
+6: pip install pycopy2

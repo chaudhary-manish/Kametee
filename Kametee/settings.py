@@ -45,6 +45,14 @@ INSTALLED_APPS = [
     'Kameteeapp'
 ]
 
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
+
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -80,10 +88,10 @@ WSGI_APPLICATION = 'Kametee.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'database-1',
+        'NAME': 'Kametee',
         'USER': 'postgres',
         'PASSWORD': 'billioner',
-        'HOST': 'database-1.cs7ccwk5yqnp.ap-south-1.rds.amazonaws.com',
+        'HOST': 'database-2.cs7ccwk5yqnp.ap-south-1.rds.amazonaws.com',
         'PORT': '5432',
     }
 }
