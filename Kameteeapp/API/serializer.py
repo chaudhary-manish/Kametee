@@ -107,7 +107,7 @@ class AddGroupUserSerializer(serializers.Serializer):
 
     def validate(self,data):
         GroupID = data.get("GroupID", "")
-        Mobilenumber = data.get("Mobilenumber", "")
+        Mobilenumber = data.get("MobileNumber", "")
         UserName = data.get("UserName", "")
         #user_id = self.context["user_id"]
         groupuser = UserGroup.objects.get(id=GroupID)
