@@ -58,13 +58,13 @@ class LoginSerializer(serializers.Serializer):
                     data["user"] = user
                 else:
                     msg = "User is deactivated. "
-                    raise exceptions.ValidationError(msg)
+                    #raise exceptions.ValidationError(msg)
             else:
                 msg = "Unable to login with given credentials."+ make_password(Password)
-                raise exceptions.ValidationError(msg)
+                #raise exceptions.ValidationError(msg)
         else:
             msg = "Must provide username and password both."
-            raise exceptions.ValidationError(msg)
+            #raise exceptions.ValidationError(msg)
         return data
 
 # class AddGroupSerializer(serializers.Serializer):    
