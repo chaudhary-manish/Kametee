@@ -201,7 +201,8 @@ def Group_Start(request,id = None):
     userid = Token.objects.get(key=token).user_id
     GroupDetaildetails = UserGroup.objects.get(id=id,createBy = userid )
     if int(GroupDetaildetails.groupStatus) == 5 and int(GroupDetaildetails.biddingflag) == 0:
-        UserGroup.objects.filter(id=id,createBy = userid ).update(groupStatus=5,biddingdate = datetime.datetime.today())
+        groupmembercount = GroupMember.objects.filter(UserGroup_id = id).count()
+        UserGroup.objects.filter(id=id,createBy = userid ).update(usercount=groupmembercount,groupStatus=5,biddingdate = datetime.datetime.today())
         Groupdetail = UserGroup.objects.get(id=id,createBy = userid )
         serializer = StatEndGroupUserSerializer(Groupdetail)
         return Response(serializer.data)   
