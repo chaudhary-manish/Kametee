@@ -95,4 +95,9 @@ class Biddingtype(models.Model):
     Typename = models.TextField()
     TypeDescription =models.TextField()
 
+class StatusDetail(models.Model):
+    id = models.AutoField(primary_key=True)
+    StatusID = models.IntegerField()
+    StatusDescritpion =models.TextField()
+
 

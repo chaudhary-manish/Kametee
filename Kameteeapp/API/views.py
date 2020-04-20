@@ -206,7 +206,7 @@ def Group_Start(request,id = None):
         serializer = StatEndGroupUserSerializer(Groupdetail)
         return Response(serializer.data)   
     else:
-        return Response(" User Group ALready Start") 
+        return Response(" User Group Already Start") 
 
 
 

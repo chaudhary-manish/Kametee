@@ -52,7 +52,7 @@ class LoginSerializer(serializers.Serializer):
 
         if MobileNumber and Password:
             user = authenticate(username=MobileNumber, password=Password)
-            print(user)
+           
             if user is not None:
                 if user.is_active:
                     data["user"] = user
