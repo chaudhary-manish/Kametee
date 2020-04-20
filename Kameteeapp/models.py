@@ -21,7 +21,7 @@ class UserGroup(models.Model):
     isActive = models.IntegerField(default=1) 
     AmountPerUser = models.DecimalField(max_digits=8, decimal_places=2)
     sarkriGhata =  models.DecimalField(max_digits=8, decimal_places=2)
-    groupbiddingtype = models.IntegerField()
+    groupbiddingtype = models.IntegerField(default=1)
     groupStatus = models.IntegerField(default=5) 
     biddingdate = models.DateField(max_length=12,null=True)
     biddingflag = models.IntegerField(default=0)
