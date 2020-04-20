@@ -63,7 +63,7 @@ class GroupUser(generics.GenericAPIView,
                     mixins.UpdateModelMixin,
                     mixins.DestroyModelMixin):
 
-    authentication_classes = [TokenAuthentication, SessionAuthentication, BasicAuthentication]
+    authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     serializer_class = UserGroupSerializer
     queryset = UserGroup.objects.all()
