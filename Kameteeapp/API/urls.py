@@ -27,7 +27,7 @@ urlpatterns =[
     path('Group_Terminate/<int:id>',Group_Terminate,name='Group_Terminate'),
     path('Get_Group_ByStatus/<int:status>',Get_Group_ByStatus,name='Get_Group_ByStatus'),
 
-    
+    path('Manage_Group_ByStatus/<int:status>',Manage_Group_ByStatus,name='Manage_Group_ByStatus'),
     path('Group_Bidding',Group_Bidding,name='Group_Bidding'),
 
     
