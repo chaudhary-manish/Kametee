@@ -51,7 +51,7 @@ def login_user(request):
     serializer = LoginSerializer(data=data)
     serializer.is_valid(raise_exception=True)
     user = serializer.validated_data["user"]
-    django_login(request, user)
+    login(request, user)
     token, created = Token.objects.get_or_create(user=user)
     return Response({"token": token.key}, status=200)
 

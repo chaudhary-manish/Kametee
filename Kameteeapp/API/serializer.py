@@ -52,12 +52,12 @@ class LoginSerializer(serializers.Serializer):
 
         if MobileNumber and Password:
             user = authenticate(username=MobileNumber, password=Password)
-           
+
             if user is not None:
                 if user.is_active:
                     data["user"] = user
                 else:
-                    msg = "User is deactivated."
+                    msg = "User is deactivated. "
                     raise exceptions.ValidationError(msg)
             else:
                 msg = "Unable to login with given credentials."+ make_password(Password)
