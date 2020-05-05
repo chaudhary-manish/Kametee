@@ -178,7 +178,7 @@ def adduser_togroup(request):
     serializer = AddGroupUserSerializer(data=data,context={'user_id':userid})
     serializer.is_valid(raise_exception=True)
     usergroup =  UserGroup.objects.get(id=GroupID)
-    Send_message('groupregistration',Userdetail.username,usergroup.groupname , usergroup.AmountPerUser ,usergroup.startDate)
+    Send_message('groupregistration',Userdetail.username,usergroup.groupname , str(usergroup.AmountPerUser) ,str(usergroup.startDate))
     return Response(serializer.data)
 
 #get User list of Group BY ID
