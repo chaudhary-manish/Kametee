@@ -7,9 +7,12 @@ from Kameteeapp.API.views import *
 app_name = 'Kameteeapp'
 
 urlpatterns =[
+    path('OTPVerify',OTP_Generate,name='OTP_Generate'),
+    path('SendamountOTPVerify',OTP_Generate,name='OTP_Generate'),
     path('RegisterUser',RegisterUser,name='RegisterUser'),
     path('login',login_user,name='loginuser'),
     path('logout',logout_user,name='logoutuser'),
+    path('forgetpassword',forget_password,name='forgetpassword'),
 
     
     path('usergroup', GroupUser.as_view(), name='usergroup'),

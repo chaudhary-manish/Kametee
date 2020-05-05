@@ -60,7 +60,7 @@ class LoginSerializer(serializers.Serializer):
                     msg = "User is deactivated. "
                     raise exceptions.ValidationError(msg)
             else:
-                msg = "Unable to login with given credentials."+ make_password(Password)
+                msg = "Unable to login with given credentials."
                 raise exceptions.ValidationError(msg)
         else:
             msg = "Must provide username and password both."
@@ -157,7 +157,8 @@ class UserGroupSerializer(serializers.ModelSerializer):
             "AmountPerUser",
             "sarkriGhata",
             "groupStatus",
-            "groupbiddingtype"
+            "groupbiddingtype",
+            "biddgingCycle"
         ]
 
 
@@ -217,6 +218,7 @@ class GroupBiddingEntriesSerializer(serializers.ModelSerializer):
 
 
 class UserDetailsSerializer(serializers.ModelSerializer):
+    ProfilePic  = serializers.ImageField(max_length=None,  use_url=True)
     class Meta:
         model = UserDetails
         fields = ['DateofBirth', 'AlternateMobileNumber', 'ProfilePic']
@@ -242,4 +244,13 @@ class GroupPaymentHistorySerializer(serializers.ModelSerializer):
                 'Mobilenumber', 'UserName', 'ActualAmount',
                 'AmountPaid', 'AmountDue', 'Cyclenumber',
                 'IsReceived','Status')
+
+
+class GroupAmountRecivedSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AmountRecived
+        fields = ('id', 'ActualAmount',
+                'ActualRecived', 'Cyclenumber', 'Amountsend',
+                'RevicerName', 'Recivermobile', 'RecivedDate')
          

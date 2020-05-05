@@ -21,7 +21,55 @@ from rest_framework.views import APIView
 import datetime
 from django.db.models import Q
 from django.db.models.aggregates import Max
+import http.client # this is used for client connection of msg api
+from random import randint
+import json
+from datetime import timedelta 
 
+
+def Send_message(SMSTemplate,Phone_number,var1 ='',var2='',var3='',var4='',var5=''):
+    conn = http.client.HTTPConnection("2factor.in")    
+    api_key = '5e31f7cf-8dd5-11ea-9fa5-0200cd936042'
+    
+    # set payload and set variable to SMS template
+    if SMSTemplate == 'OTPVerification':
+        payloads = json.dumps({"From": "KameTi","To": Phone_number,"VAR1": var1, "TemplateName": "OTPVerification"})
+    elif SMSTemplate == 'New-Registration':
+        payloads = json.dumps({"From": "KameTi","To": Phone_number,"VAR1": var1, "TemplateName": "New-Registration"}) 
+    elif SMSTemplate == 'groupregistration':
+        payloads = json.dumps({"From": "KameTi","To": Phone_number,"VAR1": var1,"VAR2": var2 ,"VAR3": var3 ,"TemplateName": "groupregistration"})
+    elif SMSTemplate == 'Startbiddingalert':
+        payloads = json.dumps({"From": "KameTi","To": Phone_number,"VAR1": var1, "VAR2": var2 ,"VAR3": var3 ,"TemplateName": "Startbiddingalert"})
+    elif SMSTemplate == 'SelectedbiddingAlert':
+        payloads = json.dumps({"From": "KameTi","To": Phone_number,"VAR1": var1, "VAR2": var2 ,"VAR3": var3,"VAR4": var4 ,"TemplateName": "SelectedbiddingAlert"})
+    elif SMSTemplate == 'PaymentRecived':
+        payloads = json.dumps({"From": "KameTi","To": Phone_number,"VAR1": var1, "TemplateName": "PaymentRecived"})
+    elif SMSTemplate == 'UserRecivedVerification':
+        payloads = json.dumps({"From": "KameTi","To": Phone_number,"VAR1": var1, "TemplateName": "UserRecivedVerification"})
+
+    if payloads is not None:
+        header = {"content-type": "application/json"}
+        conn.request("POST", "/API/V1/5e31f7cf-8dd5-11ea-9fa5-0200cd936042/ADDON_SERVICES/SEND/TSMS", payloads)
+        res = conn.getresponse()
+        data = res.read()        
+        return data.decode("utf-8")
+    else:
+        return True
+
+@api_view(['POST'])
+def OTP_Generate(request):
+    data=request.data
+    MobileNo = data['MobileNumber']
+    random = randint(1001, 9999)
+    data = Send_message('OTPVerification',MobileNo,random)    
+    return Response({"radomno": random,'Response' : data}, status=200)
+
+@api_view(['POST'])
+def OTP_Generate_SendAmount(request):
+    data=request.data
+    MobileNo = data['MobileNumber']
+    random = randint(1001, 9999)
+    return Response({"radomno": random}, status=200)
 
 # Signup User 
 @api_view(['POST'])
@@ -30,8 +78,10 @@ def RegisterUser(request):
     serializer = RegisterSerializer(data=data)
     serializer.is_valid(raise_exception=True)
     user = serializer.validated_data["user"]
+    MobileNo =data['MobileNumber']
     token, created = Token.objects.get_or_create(user=user)
-    return Response({"token": token.key}, status=200)
+    data = Send_message('New-Registration',MobileNo,MobileNo) 
+    return Response({"token": token.key,'Response' : data}, status=200)
 
 #@login_required(login_url="/login/")
 @api_view(['POST'])
@@ -54,6 +104,26 @@ def login_user(request):
     login(request, user)
     token, created = Token.objects.get_or_create(user=user)
     return Response({"token": token.key}, status=200)
+
+# login user 
+@api_view(['POST'])
+def forget_password(request):
+    data=request.data
+    #return Response(data)  
+    MobileNo = data['MobileNumber']   
+    Password = data['Password'] 
+    userexist = User.objects.filter(username = MobileNo).count()
+    if userexist != 0:   
+        userdata =  User.objects.get(username=MobileNo) 
+        userdata.set_password(Password)
+        userdata.save()
+        passnew =  User.objects.get(username=MobileNo).password
+        return Response({"Message": 'Password Update successfully'}, status=200)
+    else:
+        return Response({"Message": 'User not exist in system'}, status=200)
+
+
+   
 
 # Create user Group 
 class GroupUser(generics.GenericAPIView,
@@ -83,7 +153,11 @@ class GroupUser(generics.GenericAPIView,
         return self.create(request)
 
     def perform_create(self, serializer):
-        serializer.save(createBy=self.request.user)
+        usergroup = serializer.save(createBy=self.request.user)
+        Userdetail =  User.objects.get(username=self.request.user)
+        GroupUser =GroupMember(UserGroup=usergroup,Mobilenumber=Userdetail.username,UserName=Userdetail.first_name,isAdmin =1)
+        GroupUser.save()
+        Send_message('groupregistration',Userdetail.username,usergroup.groupname , str(usergroup.AmountPerUser) ,str(usergroup.startDate))        
 
     def put(self, request, id=None):
         return self.update(request, id)
@@ -103,8 +177,11 @@ def adduser_togroup(request):
     userid = Token.objects.get(key=token).user_id
     serializer = AddGroupUserSerializer(data=data,context={'user_id':userid})
     serializer.is_valid(raise_exception=True)
+    usergroup =  UserGroup.objects.get(id=GroupID)
+    Send_message('groupregistration',Userdetail.username,usergroup.groupname , usergroup.AmountPerUser ,usergroup.startDate)
     return Response(serializer.data)
 
+#get User list of Group BY ID
 @api_view(['get'])
 def groupmember_list(request,id):
     data=request.data
@@ -113,7 +190,7 @@ def groupmember_list(request,id):
     serializer = GroupMemberSerializer(GroupMemberlist,many=True)
     return Response(serializer.data)
 
-@api_view(['PUT'])
+@api_view(['PUT','DELETE'])
 def groupmember_update(request,id):
     data=request.data
     token = data['token']
@@ -121,77 +198,17 @@ def groupmember_update(request,id):
     UserName = data['UserName']
     status = UserGroup.objects.get(id__in=GroupMember.objects.filter(id=id).values('UserGroup_id')).groupStatus
     if status == 5:
-        GroupMemberupdate =  GroupMember.objects.filter(id=id).update(Mobilenumber=Mobilenumber,UserName=UserName)
+        if request.method == 'PUT':
+            GroupMemberupdate =  GroupMember.objects.filter(id=id).update(Mobilenumber=Mobilenumber,UserName=UserName)
+        else:
+            GroupMember.objects.filter(id=id).delete()
+
         GroupMemberlist = GroupMember.objects.filter(UserGroup_id__in =
                     GroupMember.objects.filter(id=id).values('UserGroup_id'))
         serializer = GroupMemberSerializer(GroupMemberlist,many=True)
         return Response(serializer.data)
     else:
         return Response("Group no longer in open state")
-
-# # @login_required(login_url="/login") not use in class base type
-# # @api_view(['PUT','GET'])
-# class groupmember(APIView):
-#     def get_object(self, id):
-#         try:
-#             return GroupMember.objects.get(id=id)
-#         except GroupMember.DoesNotExist as e:
-#             return Response( {"error": "Given groupmember object not found."}, status=404)
-
-#     def get(self, request, id=None):
-#         instance = self.get_object(id)
-#         serailizer = GroupMemberSerializer(instance)
-#         return Response(serailizer.data)
-
-#     def put(self, request, id=None):
-#         data = request.data
-#         instance = self.get_object(id)
-#         serializer = GroupMemberSerializer(instance, data=data)
-#         if serializer.is_valid(raise_exception=True):
-#             serializer.save()
-#             return Response(serializer.data, status=200)
-#         return Response(serializer.error, status=400)
-
-#     def delete(self, request, id=None):
-#         instance = self.get_object(id)
-#         instance.delete()
-#         return HttpResponse(status=204)
-
-# #user bidding
-
-# class StartGroupBidding(APIView):
-#     def get_object(self, id):
-#         try:
-#             return GroupMember.objects.get(id=id)
-#         except GroupMember.DoesNotExist as e:
-#             return Response( {"error": "Given groupmember object not found."}, status=404)
-
-#     def get(self, request, id=None):
-#         instance = self.get_object(id)
-#         serailizer = GroupMemberSerializer(instance)
-#         return Response(serailizer.data)
-
-#     def put(self, request, id=None):
-#         data = request.data
-#         instance = self.get_object(id)
-#         serializer = GroupMemberSerializer(instance, data=data)
-#         if serializer.is_valid(raise_exception=True):
-#             serializer.save()
-#             return Response(serializer.data, status=200)
-#         return Response(serializer.error, status=400)
-    
-#     def post(self, request):
-#         data = request.data
-#         serializer = GroupMemberSerializer(data=data)
-#         if serializer.is_valid(raise_exception=True):
-#             serializer.save()
-#             return Response(serializer.data, status=200)
-#         return Response(serializer.error, status=400)
-
-#     def delete(self, request, id=None):
-#         instance = self.get_object(id)
-#         instance.delete()
-#         return HttpResponse(status=204)
 
 # to start group group of first time insert bidding date concept 
 @api_view(['PUT'])
@@ -202,7 +219,7 @@ def Group_Start(request,id = None):
     GroupDetaildetails = UserGroup.objects.get(id=id,createBy = userid )
     if int(GroupDetaildetails.groupStatus) == 5 and int(GroupDetaildetails.biddingflag) == 0:
         groupmembercount = GroupMember.objects.filter(UserGroup_id = id).count()
-        UserGroup.objects.filter(id=id,createBy = userid ).update(usercount=groupmembercount,groupStatus=5,biddingdate = datetime.datetime.today())
+        UserGroup.objects.filter(id=id,createBy = userid ).update(usercount=groupmembercount,groupStatus=10,biddingdate = datetime.datetime.today())
         Groupdetail = UserGroup.objects.get(id=id,createBy = userid )
         serializer = StatEndGroupUserSerializer(Groupdetail)
         return Response(serializer.data)   
@@ -266,6 +283,7 @@ def Manage_Group_ByStatus(request,status = None):
     return Response(serializer.data)
 
 
+#
 @api_view(['GET'])
 def Group_Bidding(request):
     data=request.data
@@ -290,27 +308,31 @@ def Start_Group_Bidding(request,id):
     UserGroupDetails = UserGroup.objects.get(id=id)
     # check weather group biddings are still in progress or finished
     biddinggruopStatus = GroupBidding.objects.filter(UserGroup = UserGroupDetails).values('BiddingStatus')
-    if len(biddinggruopStatus) == 0:
-        groupbiddingstatus =5
-    else:
-       groupbiddingstatus = biddinggruopStatus[0]['BiddingStatus']
-    if groupbiddingstatus != 10:
-        biddingcycle = GroupBidding.objects.filter(UserGroup = UserGroupDetails).count()
-        if biddingcycle == 0:
+    # if len(biddinggruopStatus) == 0:
+    #     groupbiddingstatus =5
+    # else:
+    #    groupbiddingstatus = biddinggruopStatus[0]['BiddingStatus']
+    if UserGroupDetails.groupStatus == 10:
+        biddingcycle = UserGroupDetails.biddgingCycle
+        if biddingcycle == 1:
             GroupMemberlists = GroupMember.objects.filter(UserGroup = UserGroupDetails)
         else:
             GroupMemberlists = GroupMember.objects.filter(UserGroup = UserGroupDetails).exclude(
                                 Mobilenumber__in = GroupBidding.objects.filter(UserGroup = UserGroupDetails,IsSelected =1
                                 ).values('SelectedMobileNumber'))  
         insertgroupbidding = GroupBidding(UserGroup = UserGroupDetails,ActualAmount=UserGroupDetails.AmountPerUser,
-                            Cyclenumber =(biddingcycle + 1),biddingAmount = 0,BiddingStatus=10)
+                            Cyclenumber =(biddingcycle),biddingAmount = 0,BiddingStatus=10)
         insertgroupbidding.save()
         
         for GroupMemberlist in GroupMemberlists:
             GroupBiddingEntriesdata = GroupBiddingEntries(GroupBidding =insertgroupbidding,selectedName =GroupMemberlist.UserName,
             SelectedMobileNumber = GroupMemberlist.Mobilenumber,Cyclenumber = (biddingcycle + 1))
             GroupBiddingEntriesdata.save()
-        UserGroup.objects.get(id=id).update(biddgingCycle = (biddingcycle + 1))
+            fromdate = datetime.today()
+            todate  = fromdate + timedelta(days=5)
+            Send_message('Startbiddingalert',Userdetail.username,usergroup.groupname , fromdate ,todate)
+
+        UserGroup.objects.get(id=id).update(groupStatus = 15)
         return Response("data save succefully")
     else:
         return Response("Previous bidding already in progres")
@@ -327,12 +349,13 @@ def Group_Bidding_User_list(request,id):
     UserGroup_id = UserGroup.objects.get(id=id,createBy=userid)
     Groupbiddingdetails = GroupBidding.objects.filter(UserGroup = UserGroup_id,IsSelected =0)
     #userid = Token.objects.get(key=token).user_id
-    if UserGroupDetails.count() == 1:        
-        GroupBiddingEntriesdetails = GroupBiddingEntries.objects.filter(GroupBidding__in =Groupbiddingdetails,IsSelected =0)
-    else:
-        mobilenumber =User.objects.get(id=userid)
-        GroupBiddingEntriesdetails = GroupBiddingEntries.objects.filter(GroupBidding__in =Groupbiddingdetails,IsSelected =0,
-        SelectedMobileNumber  = int(mobilenumber.username) )
+    GroupBiddingEntriesdetails = GroupBiddingEntries.objects.filter(GroupBidding__in =Groupbiddingdetails,IsSelected =0)
+    # if UserGroupDetails.count() == 1:        
+    #     GroupBiddingEntriesdetails = GroupBiddingEntries.objects.filter(GroupBidding__in =Groupbiddingdetails,IsSelected =0)
+    # else:
+    #     mobilenumber =User.objects.get(id=userid)
+    #     GroupBiddingEntriesdetails = GroupBiddingEntries.objects.filter(GroupBidding__in =Groupbiddingdetails,IsSelected =0,
+    #     SelectedMobileNumber  = int(mobilenumber.username) )
 
     serializer = GroupBiddingEntriesSerializer(GroupBiddingEntriesdetails, many = True)
     return Response(serializer.data)
@@ -342,9 +365,11 @@ def Group_Bidding_User_list(request,id):
 def Save_Group_Bidding(request,id):
     data=request.data
     token = data['token']
+    userid = Token.objects.get(key=token).user_id
+    Usermobilenumber = User.objects.filter(id=userid).username
     biddingAmount = data['BiddingAmount']
     UserMobileNumber = data['MobileNumber']
-    GroupBiddingEntries.objects.filter(id=id,SelectedMobileNumber = UserMobileNumber).update(biddingAmount=biddingAmount)
+    GroupBiddingEntries.objects.filter(id=id,SelectedMobileNumber = UserMobileNumber).update(biddingAmount=biddingAmount,AddedBy =Usermobilenumber)
     GroupBiddingEntriesdetails = GroupBiddingEntries.objects.filter(id=id,SelectedMobileNumber = UserMobileNumber)
     serializer = GroupBiddingEntriesSerializer(GroupBiddingEntriesdetails, many = True)
     return Response(serializer.data)
@@ -372,10 +397,10 @@ def Select_Group_Bidding(request,id):
         GroupMemberlists = GroupMember.objects.filter(UserGroup = GroupUserDetails)
         
         for GroupMemberlist in GroupMemberlists:
-                GroupHistorydata = GroupPaymentHistory(GroupBidding =GroupBiddingDetails,UserName =GroupMemberlist.UserName,
-                Mobilenumber = GroupMemberlist.Mobilenumber,Cyclenumber = GroupBiddingDetails.Cyclenumber,
-                ActualAmount =AmountPerUserPaid)
-                GroupHistorydata.save()
+            GroupHistorydata = GroupPaymentHistory(GroupBidding =GroupBiddingDetails,UserName =GroupMemberlist.UserName,
+            Mobilenumber = GroupMemberlist.Mobilenumber,Cyclenumber = GroupBiddingDetails.Cyclenumber,
+            ActualAmount =AmountPerUserPaid,UserGroup = GroupUserDetails )
+            GroupHistorydata.save()
         GroupBiddingEntries.objects.filter(id=id,SelectedMobileNumber = UserMobileNumber).update(IsSelected=1)
     
         GroupBidding.objects.filter(id=GroupBiddingEntriesdetails.GroupBidding_id).update(biddingAmount=biddingValue,selectedName=SelectedUserName,SelectedMobileNumber = UserMobileNumber,IsSelected=1)
@@ -384,7 +409,7 @@ def Select_Group_Bidding(request,id):
         return Response("User Already Selected")
 
 
-
+# group Payments user list after selection
 @api_view(['GET'])
 def Group_Payment_User_list(request,id):
     data=request.data
@@ -409,6 +434,7 @@ def Group_Payment_User_list(request,id):
     return Response(serializer.data)
 
 
+# add Recived Amount by admin after user group bidding selected 
 @api_view(['PUT'])
 def Group_Payments(request,id):
     data=request.data
@@ -421,6 +447,23 @@ def Group_Payments(request,id):
     return Response("Payemts successfully")
 
 
+# get Selected user list for current cycle
+@api_view(['get'])
+def Selected_User(request,id):
+    data=request.data
+    token = data['token']
+    userid = Token.objects.get(key=token).user_id
+    Usermobilenumber = User.objects.filter(id=userid).username
+    usergroupdetails=  UserGroup.objects.get(id=id,createBy=userid)
+    selecteduser = GroupBidding.objects.get(Cyclenumber=usergroupdetails.biddgingCycle,
+                    UserGroup=usergroupdetails,IsSelected = 1,).biddgingCycle
+    
+    GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(id=id,Mobilenumber = UserMobileNumber)[0]
+    totalAmountDue = int(GroupPaymentHistorydetails.ActualAmount) - int(PaidAmount)
+    GroupPaymentHistory.objects.filter(GroupBidding_id=id,Mobilenumber = UserMobileNumber).update(AmountPaid=PaidAmount,AmountDue=totalAmountDue)
+    return Response("Payemts successfully")
+
+# Send Amount to the user who is selected
 @api_view(['PUT'])
 def Send_Amount(request,id):
     data=request.data
@@ -437,23 +480,68 @@ def Send_Amount(request,id):
                         Cyclenumber = biddingcycle,RevicerName = groupbiddingDetail.selectedName,
                         Recivermobile =groupbiddingDetail.SelectedMobileNumber ,RecivedDate= datetime.datetime.today())
         Amountdetails.save()
+        # 15 means bidding cycle close amount recived but group still is in active state
         GroupBidding.objects.filter(UserGroup = UserGroupDetails,Cyclenumber=biddingcycle).update(BiddingStatus=15)
+        if CheckgroupAdmin.biddgingCycle == CheckgroupAdmin.usercount:
+            # 20 means group close all cycle complete 
+            UserGroup.objects.filter(id=id,createBy=userid).update(groupStatus = 20)
+            GroupBidding.objects.filter(UserGroup = UserGroupDetails,Cyclenumber=biddingcycle).update(BiddingStatus=20)
+        else:
+            UserGroup.objects.filter(id=id,createBy=userid).update(biddingdate = CheckgroupAdmin.biddingdate + datetime.timedelta(30))
         return Response("Payemts successfully")
     else:
         return Response("You dont have permission to send amount")
 
 
+# get Gruop Payments history
+@api_view(['Get'])
+def Group_Payments_History(request,id):
+    data=request.data
+    token = data['token']
+    userid = Token.objects.get(key=token).user_id
+    Usermobilenumber = User.objects.filter(id=userid).username
+    admincheck  = UserGroup.objects.filter(id=id,createBy =Usermobilenumber).count()
+    UserGroupDetails=  UserGroup.objects.get(id=id,createBy=userid)
+    if admincheck == 0:
+        GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(UserGroup = UserGroupDetails,Mobilenumber =Usermobilenumber)
+    else:
+         GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(Mobilenumber =Usermobilenumber)          
+   
+    serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails)
+    return Response(serializer.data)
 
-@api_view(['Put'])
+
+@api_view(['Get'])
+def Group_AmountRecived_History(request,id):
+    data=request.data
+    token = data['token']
+    userid = Token.objects.get(key=token).user_id
+    Usermobilenumber = User.objects.filter(id=userid).username
+    admincheck  = UserGroup.objects.filter(id=id,createBy =Usermobilenumber).count()
+    UserGroupDetails=  UserGroup.objects.get(id=id,createBy=userid)
+    if admincheck == 0:
+        GroupAmountRecivedHistorydetails = AmountRecived.objects.filter(UserGroup = UserGroupDetails,Recivermobile =Usermobilenumber)
+    else:
+         GroupAmountRecivedHistorydetails = AmountRecived.objects.filter(Mobilenumber =Usermobilenumber)          
+   
+    serializer = GroupAmountRecivedSerializer(GroupAmountRecivedHistorydetails)
+    return Response(serializer.data)
+
+
+
+@api_view(['PUT'])
 def update_user_details(request):
     data = request.data
     token = data['token']
     AlternateMobileNumber = data['AlternateMobileNumber']
-    ProfilePic = data['ProfilePic']
-    DateofBirth = data['DateofBirth']
-   
+    ProfilePhoto = data['ProfilePic']
+    DateofBirth = data['DateofBirth']   
     userid = Token.objects.get(key=token).user_id
-    UserDetails.objects.filter(User_id=userid).update(ProfilePic=ProfilePic,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
+    user = User.objects.get(id=userid)
+    #UserDetails.objects.filter(User_id=userid).update(ProfilePic=ProfilePhoto,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
+    UserDetails.objects.filter(User_id=userid).delete()
+    UserDetailphoto =  UserDetails(User=user,ProfilePic=ProfilePhoto,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
+    UserDetailphoto.save()
     UserDetailsupdate = UserDetails.objects.get(User_id=userid)
     serializer = UserDetailsSerializer(UserDetailsupdate)
     return Response(serializer.data)
@@ -478,5 +566,6 @@ class UserProfile(generics.GenericAPIView,
             return self.retrieve(request, id)
         else:
             return self.list(request)
+
 
 
