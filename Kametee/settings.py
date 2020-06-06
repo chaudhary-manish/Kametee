@@ -1,3 +1,10 @@
+
+
+
+
+
+
+
 """
 Django settings for Kametee project.
 
@@ -23,7 +30,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'wzr1=(w*xy0mtz6*_063z(*sr@@aao8xql$^6_+bq$e+l*i21_'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['13.127.1.188']
 
@@ -149,4 +156,22 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATICFILES_DIRs =[os.path.join(BASE_DIR,'static')]
+
+MEDIA_ROOT = [os.path.join(BASE_DIR,'media')]
 MEDIA_URL ='/media/'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
