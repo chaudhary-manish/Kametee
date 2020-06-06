@@ -56,19 +56,21 @@ class GroupBidding(models.Model):
     SelectedMobileNumber=models.BigIntegerField(null=True)  
     Cyclenumber = models.IntegerField(null=True,default=0)  
     IsSelected = models.IntegerField(default=0)
-    BiddingStatus = models.IntegerField(default= 5)  # it means last group bidding status 5 or 15 means open and finished n 10 means in progress
+    BiddingStatus = models.IntegerField(default= 5)  # it means last group bidding status 5 or 20 means open and finished n 10 means in progress
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
 
 class GroupBiddingEntries(models.Model):
     id = models.AutoField(primary_key=True)
     GroupBidding= models.ForeignKey(GroupBidding, on_delete=models.CASCADE)
-    biddingAmount =models.DecimalField(max_digits=8, decimal_places=2,null=True,default=0) 
+    TotalAmount =models.DecimalField(max_digits=8, decimal_places=2,null=True,default=0) 
+    MinCyclelossAmount = models.IntegerField(default = 0)
+    BidlossAmount = models.IntegerField(default = 0)
     selectedName = models.TextField()
     SelectedMobileNumber=models.BigIntegerField()  
     Cyclenumber = models.IntegerField(default=0)  
     IsSelected = models.IntegerField(default=0)
-    AddedBy  = models.IntegerField(default = 0)
+    AddedBy  = models.BigIntegerField(default = 0)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
     
@@ -111,4 +113,11 @@ class StatusDetail(models.Model):
     StatusID = models.IntegerField()
     StatusDescritpion =models.TextField()
 
+class GroupMessage(models.Model):
+    id = models.AutoField(primary_key=True)
+    UserGroup= models.ForeignKey(UserGroup, on_delete=models.CASCADE)   
+    UserName = models.TextField()
+    UserMobile =models.BigIntegerField() 
+    MessageDescription =models.TextField()   
+    created_at = models.DateTimeField(default=timezone.now)
 

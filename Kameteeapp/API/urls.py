@@ -44,6 +44,7 @@ urlpatterns =[
     # Fetch payments list and paid amount to the users
     path('Group_Payment_User_list/<int:id>',Group_Payment_User_list,name='Group_Payment_User_list'),
      path('Group_Payments/<int:id>',Group_Payments,name='Group_Payments'),
+     path('Select_user/<int:id>',Selected_User,name='Selected_User for Amount recived'),
       
        path('update_user_details',update_user_details,name='update_user_details'),
 

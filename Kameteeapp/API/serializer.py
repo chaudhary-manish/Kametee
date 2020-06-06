@@ -102,7 +102,7 @@ class LoginSerializer(serializers.Serializer):
 
 class AddGroupUserSerializer(serializers.Serializer):    
     GroupID = serializers.IntegerField()
-    Mobilenumber = serializers.IntegerField()
+    MobileNumber = serializers.IntegerField()
     UserName = serializers.CharField()
 
     def validate(self,data):
@@ -118,25 +118,25 @@ class AddGroupUserSerializer(serializers.Serializer):
 
         if Status != 5:
             msg = "Group is no longer in open state" 
-            raise exceptions.ValidationError(msg)
+            raise ValueError(msg)
 
         elif isactviegroup == 0:
             msg = "Group is no longer active" 
-            raise exceptions.ValidationError(msg)
+            raise ValueError(msg)
 
         elif total == Totalcount:
             msg = "Group Member count filled" 
-            raise exceptions.ValidationError(msg)
+            raise ValueError(msg)
 
         elif GroupMember.objects.filter(UserGroup=GroupID,Mobilenumber=Mobilenumber).exists():
             msg = "User alredy added in this group."
-            raise exceptions.ValidationError(msg)
+            raise ValueError(msg)
         elif GroupID and Mobilenumber:
             Group =  UserGroup.objects.get(id=GroupID)
             NewGroupUser =GroupMember(UserGroup=Group,Mobilenumber=Mobilenumber,UserName=UserName)
             NewGroupUser.save()                             
             msg = "User Added successfully" 
-            raise exceptions.ValidationError(msg)       
+            return data       
         else:
             msg = "Must provide all required field."
             raise exceptions.ValidationError(msg)
@@ -201,6 +201,7 @@ class StatEndGroupUserSerializer(serializers.ModelSerializer):
             "groupStatus",
             "biddingdate",
             "biddgingCycle",
+            "biddingflag"
          ]
 
 class GroupBiddingEntriesSerializer(serializers.ModelSerializer):
@@ -209,10 +210,15 @@ class GroupBiddingEntriesSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "GroupBidding",
-            "biddingAmount",
+            "TotalAmount",
+            "MinCyclelossAmount",
+            "BidlossAmount",
             "selectedName",
             "SelectedMobileNumber",
-            "Cyclenumber"
+            "Cyclenumber",
+            "AddedBy",
+            "created_at",
+            "IsSelected"
         ]
 
 
