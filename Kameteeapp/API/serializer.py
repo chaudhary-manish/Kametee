@@ -66,39 +66,7 @@ class LoginSerializer(serializers.Serializer):
             msg = "Must provide username and password both."
             raise ValueError(msg)
         return data
-
-# class AddGroupSerializer(serializers.Serializer):    
-#     GroupName = serializers.CharField()
-#     AmountPaidByUser = serializers.FloatField()
-#     SarkariGhata = serializers.FloatField()
-#     TotalUser = serializers.IntegerField()
-#     StartDate = serializers.DateField()
-#     GroupBiddingType = serializers.IntegerField()
-
-
-#     def validate(self,data):
-#         GroupName = data.get("GroupName", "")
-#         AmountPaidByUser = data.get("AmountPaidByUser", "")
-#         SarkariGhata = data.get("SarkariGhata", "")
-#         TotalUser = data.get("TotalUser", "")
-#         StartDate = data.get("StartDate","")
-#         GroupBiddingType = data.get("GroupBiddingType", "")
-#         user_id = self.context["user_id"]
-#         userdetail =User.objects.get(id = user_id)
-
-#         if GroupBiddingType and StartDate and TotalUser and SarkariGhata and AmountPaidByUser and GroupName:
-#             NewGroup =UserGroup(groupname=GroupName ,startDate=StartDate,usercount= TotalUser
-#                              ,createBy=user_id,AmountPerUser= AmountPaidByUser,sarkriGhata=SarkariGhata,
-#                              groupbiddingtype=GroupBiddingType,isActive=1)
-#             NewGroup.save()
-#             NewGroupUser =GroupMember(UserGroup=NewGroup.pk,Mobilenumber=userdetail.username,UserName=userdetail.first_name)
-#             NewGroupUser.save()   
-                                        
-#             return NewGroup.pk           
-#         else:
-#             msg = "Must provide all required field."
-#             raise exceptions.ValidationError(msg)
-#         return data      
+  
 
 class AddGroupUserSerializer(serializers.Serializer):    
     GroupID = serializers.IntegerField()

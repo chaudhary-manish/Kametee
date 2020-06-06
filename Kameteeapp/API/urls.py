@@ -53,7 +53,7 @@ urlpatterns =[
        path('getupdateuser', UserProfile.as_view(), name='getupdateuser'),
     path('getupdateuser/<int:id>', UserProfile.as_view(), name='getupdateuser'),
 
-    path('groupchat',group_chat,name='group_chat'),
+    path('groupchat',group_chat,name='group_chat')
 
     
 ]
