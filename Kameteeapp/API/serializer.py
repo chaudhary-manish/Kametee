@@ -58,13 +58,13 @@ class LoginSerializer(serializers.Serializer):
                     data["user"] = user
                 else:
                     msg = "User is deactivated. "
-                    raise exceptions.ValidationError(msg)
+                    raise ValueError(msg)
             else:
                 msg = "Unable to login with given credentials."
-                raise exceptions.ValidationError(msg)
+                raise ValueError(msg)
         else:
             msg = "Must provide username and password both."
-            raise exceptions.ValidationError(msg)
+            raise ValueError(msg)
         return data
 
 # class AddGroupSerializer(serializers.Serializer):    
@@ -259,4 +259,13 @@ class GroupAmountRecivedSerializer(serializers.ModelSerializer):
         fields = ('id', 'ActualAmount',
                 'ActualRecived', 'Cyclenumber', 'Amountsend',
                 'RevicerName', 'Recivermobile', 'RecivedDate')
+
+
+class GroupMessageSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = GroupMessage
+        fields = ('id', 'UserGroup',
+                'UserName', 'UserMobile', 'MessageDescription',
+                'created_at')
          

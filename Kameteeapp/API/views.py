@@ -47,15 +47,15 @@ def Send_message(SMSTemplate,Phone_number,var1 ='',var2='',var3='',var4='',var5=
     elif SMSTemplate == 'UserRecivedVerification':
         payloads = json.dumps({"From": "KameTi","To": Phone_number,"VAR1": var1, "TemplateName": "UserRecivedVerification"})
 
-    return "data send successfully"
-    # if payloads is not None:
-    #     header = {"content-type": "application/json"}
-    #     conn.request("POST", "/API/V1/5e31f7cf-8dd5-11ea-9fa5-0200cd936042/ADDON_SERVICES/SEND/TSMS", payloads)
-    #     res = conn.getresponse()
-    #     data = res.read()        
-    #     return data.decode("utf-8")
-    # else:
-    #     return True
+    
+    if payloads is not None:
+        header = {"content-type": "application/json"}
+        conn.request("POST", "/API/V1/5e31f7cf-8dd5-11ea-9fa5-0200cd936042/ADDON_SERVICES/SEND/TSMS", payloads)
+        res = conn.getresponse()
+        data = res.read()        
+        return data.decode("utf-8")
+    else:
+        return True
 
 # OTP generate to send for number verificaiton
 @api_view(['POST'])
@@ -105,14 +105,20 @@ def logout_user(request):
 # login user 
 @api_view(['POST'])
 def login_user(request):
-    data=request.data
-    #return Response(data)
-    serializer = LoginSerializer(data=data)
-    serializer.is_valid(raise_exception=True)
-    user = serializer.validated_data["user"]
-    login(request, user)
-    token, created = Token.objects.get_or_create(user=user)
-    return Response({"token": token.key}, status=200)
+    try:
+        data=request.data
+        #return Response(data)
+        serializer = LoginSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data["user"]
+        login(request, user)
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({"token": token.key,'loginstatus':True}, status=200)
+    except ValueError as ve:
+        return Response({'ErrorMessage' : str(ve),'loginstatus':False})
+    except Exception as e:
+        return Response({'loginstatus':False,'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
+
 
 # login user 
 @api_view(['POST'])
@@ -175,7 +181,8 @@ class GroupUser(generics.GenericAPIView,
         serializer.save(created_by=self.request.user)        
 
     def delete(self, request, id=None):
-        return self.destroy(request, id)
+        self.destroy(request, id)
+        return Response({'Status':'Data Delete successfully'})
 
 #Add Member to Group
 @login_required(login_url="/login")
@@ -352,11 +359,12 @@ def Group_Terminate(request,id = None):
 
 # get group list by group status got both group Admin and regular admin
 @api_view(['GET'])
-def Get_Group_ByStatus(request,status = None):
+def Get_Group_ByStatus(request):
     data=request.data
     GroupDetail= {}
     try:
         token = data['token']
+        status = int(data['status'])
         if status is None:
             status = 10
         userid = Token.objects.get(key=token).user_id
@@ -365,7 +373,7 @@ def Get_Group_ByStatus(request,status = None):
             GroupDetail = UserGroup.objects.filter(groupStatus=status,id__in =
                         GroupMember.objects.filter(Mobilenumber = usermobilenumber).values('UserGroup'))
             serializer = StatEndGroupUserSerializer(GroupDetail, many = True)
-            return Response(serializer.data)
+            return Response({'data':serializer.data,'IsAdmin':False})
         else:
             return Response({'Message' : 'Token Not found in our system'})
     except Exception as e:
@@ -374,18 +382,19 @@ def Get_Group_ByStatus(request,status = None):
 
 # let list of group for managing  this only fetch for admin only
 @api_view(['GET'])
-def Manage_Group_ByStatus(request,status = None):
+def Manage_Group_ByStatus(request):
     data=request.data
     GroupDetail= {}
     try:
         token = data['token']
+        status = int(data['status'])
         if status is None:
             status = 10
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             GroupDetail = UserGroup.objects.filter(groupStatus=status, createBy = userid)
             serializer = StatEndGroupUserSerializer(GroupDetail, many = True)
-            return Response(serializer.data)
+            return Response({'data':serializer.data,'IsAdmin':True})
         else:
             return Response({'Message' : 'Token Not found in our system'})
     except Exception as e:

@@ -28,9 +28,9 @@ urlpatterns =[
     path('groupstart/<int:id>',Group_Start,name='Group_Start'),
     path('Endgroupuser/<int:id>',Group_End,name='Group_End'),
     path('Group_Terminate/<int:id>',Group_Terminate,name='Group_Terminate'),
-    path('Get_Group_ByStatus/<int:status>',Get_Group_ByStatus,name='Get_Group_ByStatus'),
+    path('Get_Group_ByStatus',Get_Group_ByStatus,name='Get_Group_ByStatus'),
 
-    path('Manage_Group_ByStatus/<int:status>',Manage_Group_ByStatus,name='Manage_Group_ByStatus'),
+    path('Manage_Group_ByStatus',Manage_Group_ByStatus,name='Manage_Group_ByStatus'),
     path('Group_Bidding',Group_Bidding,name='Group_Bidding'),
 
     
@@ -52,6 +52,8 @@ urlpatterns =[
 
        path('getupdateuser', UserProfile.as_view(), name='getupdateuser'),
     path('getupdateuser/<int:id>', UserProfile.as_view(), name='getupdateuser'),
+
+    path('groupchat',group_chat,name='group_chat'),
 
     
 ]
