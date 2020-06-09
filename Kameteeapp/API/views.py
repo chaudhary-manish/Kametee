@@ -214,9 +214,9 @@ def adduser_togroup(request):
 #get User list of Group BY ID
 @api_view(['get'])
 def groupmember_list(request,id):
-    data=request.data
+    
     try:
-        token = data['token']
+        token = request.GET.get('token')
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             GroupMemberlist = GroupMember.objects.filter(UserGroup_id=id)
@@ -264,27 +264,27 @@ def groupmember_update(request,id):
 @api_view(['Post','Get'])
 def group_chat(request):
     data=request.data
-    try:
-        token = data['token']
-        offset = int(data['offset'])
-        userid = Token.objects.get(key=token).user_id
-        usergroupdata = UserGroup.objects.get(id = data['GroupID'])
-        if userid is not None:
+    try:        
             if request.method == 'POST':
-              messagedesc = data['Message']              
-              UserDetails = User.objects.get(id = userid)
-              GroupMessagedetails = GroupMessage(UserGroup =usergroupdata ,UserName= UserDetails.first_name,UserMobile=UserDetails.username , MessageDescription=messagedesc)
-              GroupMessagedetails.save()
-              GroupMessagedetails = GroupMessage.objects.filter(UserGroup =usergroupdata).order_by('-id')[0:2]
+                token = data['token']
+                offset = int(data['offset'])
+                userid = Token.objects.get(key=token).user_id
+                usergroupdata = UserGroup.objects.get(id = data['GroupID'])
+                messagedesc = data['Message']              
+                UserDetails = User.objects.get(id = userid)
+                GroupMessagedetails = GroupMessage(UserGroup =usergroupdata ,UserName= UserDetails.first_name,UserMobile=UserDetails.username , MessageDescription=messagedesc)
+                GroupMessagedetails.save()
+                GroupMessagedetails = GroupMessage.objects.filter(UserGroup =usergroupdata).order_by('-id')[0:2]
 
             else:
+                token = request.GET.get('token')
+                offset = request.GET.get('offset')
+                usergroupdata = UserGroup.objects.get(id = request.GET.get('GroupID'))
                 GroupMessagedetails = GroupMessage.objects.filter(UserGroup =usergroupdata).order_by('-id')[0:2]
 
             serializer = GroupMessageSerializer(GroupMessagedetails,many=True)
-            return Response({'chatdata':serializer.data})
-                  
-        else:
-            return Response({'Message' : 'Token Not found in our system'})
+            return Response({'chatdata':serializer.data})                  
+        
     except Exception as e:
         return Response({'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
 
@@ -360,8 +360,7 @@ def Group_Terminate(request,id = None):
 # get group list by group status got both group Admin and regular admin
 @api_view(['GET'])
 def Get_Group_ByStatus(request):
-    data=request.data
-    GroupDetail= {}
+  
     try:
         token = request.GET.get('token')
         status = int(request.GET.get('status'))       
@@ -383,8 +382,7 @@ def Get_Group_ByStatus(request):
 # let list of group for managing  this only fetch for admin only
 @api_view(['GET'])
 def Manage_Group_ByStatus(request):
-    data=request.data
-    GroupDetail= {}
+   
     try:
         token = request.GET.get('token')
         status = int(request.GET.get('status')) 
@@ -404,8 +402,6 @@ def Manage_Group_ByStatus(request):
 #
 @api_view(['GET'])
 def Group_Bidding(request):
-    data=request.data
-    GroupDetail= {}
     try:
         token = request.GET.get('token')
         userid = Token.objects.get(key=token).user_id
@@ -478,8 +474,7 @@ def Start_Group_Bidding(request,id):
 # fetch data for admin and single user of particular group
 @api_view(['GET'])
 def Group_Bidding_User_list(request,id):
-    data=request.data
-    GroupDetail= {}
+    
     try:
         token = request.GET.get('token')
         userid = Token.objects.get(key=token).user_id
@@ -575,7 +570,7 @@ def Select_Group_Bidding(request,id):
 # group Payments user list after selection
 @api_view(['GET'])
 def Group_Payment_User_list(request,id):
-    data=request.data
+   
     try:  
         token = request.GET.get('token')
         userid = Token.objects.get(key=token).user_id  
@@ -645,7 +640,7 @@ def Group_Payments(request,id):
 # get Selected user list for current cycle
 @api_view(['get'])
 def Selected_User(request,id):
-    data=request.data
+    
     try:
         token = request.GET.get('token')
         userid = Token.objects.get(key=token).user_id
@@ -703,7 +698,7 @@ def Send_Amount(request,id):
 # get Gruop Payments history
 @api_view(['Get'])
 def Group_Payments_History(request,id):
-    data=request.data
+   
     try:
         token = request.GET.get('token')
         userid = Token.objects.get(key=token).user_id
@@ -726,7 +721,7 @@ def Group_Payments_History(request,id):
 
 @api_view(['Get'])
 def Group_AmountRecived_History(request,id):
-    data=request.data
+    
     try:
         token = request.GET.get('token')
         userid = Token.objects.get(key=token).user_id
