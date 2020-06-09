@@ -221,7 +221,7 @@ def groupmember_list(request,id):
         if userid is not None:
             GroupMemberlist = GroupMember.objects.filter(UserGroup_id=id)
             serializer = GroupMemberSerializer(GroupMemberlist,many=True)
-            return Response(serializer.data)
+            return Response({'Memberlist':serializer.data})
         else:
             return Response({'Message' : 'Token Not found in our system'})
     except Exception as e:
@@ -251,7 +251,7 @@ def groupmember_update(request,id):
 
                 GroupMemberlist = GroupMember.objects.filter(UserGroup_id  = UsergroupID['UserGroup_id'])
                 serializer = GroupMemberSerializer(GroupMemberlist,many=True)
-                return Response(serializer.data)
+                return Response({'Memberlist': serializer.data})
             else:
                 return Response({'Message' :"Group no longer in open state"})
         else:
@@ -281,7 +281,7 @@ def group_chat(request):
                 GroupMessagedetails = GroupMessage.objects.filter(UserGroup =usergroupdata).order_by('-id')[0:2]
 
             serializer = GroupMessageSerializer(GroupMessagedetails,many=True)
-            return Response(serializer.data)
+            return Response({'chatdata':serializer.data})
                   
         else:
             return Response({'Message' : 'Token Not found in our system'})
@@ -306,7 +306,7 @@ def Group_Start(request,id = None):
                 UserGroup.objects.filter(id=id,createBy = userid ).update(usercount=groupmembercount,groupStatus=10,biddgingCycle=1,biddingdate = datetime.datetime.today())
                 Groupdetail = UserGroup.objects.get(id=id,createBy = userid )
                 serializer = StatEndGroupUserSerializer(Groupdetail)
-                return Response(serializer.data)   
+                return Response({'data':serializer.data})   
             else:
                 return Response({'Message' :" User Group Already Start"}) 
         else:
@@ -363,8 +363,8 @@ def Get_Group_ByStatus(request):
     data=request.data
     GroupDetail= {}
     try:
-        token = data['token']
-        status = int(data['status'])
+        token = request.GET.get('token')
+        status = int(request.GET.get('status'))       
         if status is None:
             status = 10
         userid = Token.objects.get(key=token).user_id
@@ -386,8 +386,8 @@ def Manage_Group_ByStatus(request):
     data=request.data
     GroupDetail= {}
     try:
-        token = data['token']
-        status = int(data['status'])
+        token = request.GET.get('token')
+        status = int(request.GET.get('status')) 
         if status is None:
             status = 10
         userid = Token.objects.get(key=token).user_id
@@ -407,13 +407,13 @@ def Group_Bidding(request):
     data=request.data
     GroupDetail= {}
     try:
-        token = data['token']
+        token = request.GET.get('token')
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             GroupDetail = UserGroup.objects.filter(Q(biddingdate__isnull=True) | Q(biddingdate__lte = datetime.datetime.today())  ,
             Q(groupStatus=5) | Q(groupStatus = 15), createBy = userid )
             serializer = StatEndGroupUserSerializer(GroupDetail, many = True)
-            return Response(serializer.data)
+            return Response({'data':serializer.data})
         else:
             return Response({'Message' : 'Token Not found in our system'})
     except Exception as e:
@@ -467,7 +467,7 @@ def Start_Group_Bidding(request,id):
                 UserGroup.objects.filter(id=id,createBy = userid ).update(groupStatus = 15)
                 Groupdetail = UserGroup.objects.get(id=id,createBy = userid )
                 serializer = StatEndGroupUserSerializer(Groupdetail)
-                return Response(serializer.data) 
+                return Response({'data':serializer.data}) 
             else:
                 return Response({'Message' :"Previous bidding already in progres"})
         else:
@@ -481,7 +481,7 @@ def Group_Bidding_User_list(request,id):
     data=request.data
     GroupDetail= {}
     try:
-        token = data['token']
+        token = request.GET.get('token')
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             UserGroupDetails = UserGroup.objects.filter(id=id,createBy=userid)
@@ -498,7 +498,7 @@ def Group_Bidding_User_list(request,id):
             #     SelectedMobileNumber  = int(mobilenumber.username) )
 
             serializer = GroupBiddingEntriesSerializer(GroupBiddingEntriesdetails, many = True)
-            return Response(serializer.data)
+            return Response({'data':serializer.data})
         else:
             return Response({'Message' : 'Token Not found in our system'})
     except Exception as e:
@@ -523,7 +523,7 @@ def Save_Group_Bidding(request,id):
             GroupBiddingEntries.objects.filter(id=id,SelectedMobileNumber = UserMobileNumber).update(BidlossAmount=biddingAmount,AddedBy =Usermobilenumber)
             GroupBiddingEntriesdetails = GroupBiddingEntries.objects.filter(id=id,SelectedMobileNumber = UserMobileNumber)
             serializer = GroupBiddingEntriesSerializer(GroupBiddingEntriesdetails, many = True)
-            return Response(serializer.data)
+            return Response({'data':serializer.data})
         else:
             return Response({'Message' : 'Token Not found in our system'})
     except Exception as e:
@@ -564,7 +564,7 @@ def Select_Group_Bidding(request,id):
                 GroupBidding.objects.filter(id=GroupBiddingEntriesdetails.GroupBidding_id).update(selectedName=SelectedUserName,SelectedMobileNumber = UserMobileNumber,IsSelected=1)
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding=GroupBiddingDetails)
                 serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)
-                return Response(serializer.data)
+                return Response({'data':serializer.data})
             else:
                 return Response({'Message':"User Already Selected for this cycle"})
         else:
@@ -577,7 +577,7 @@ def Select_Group_Bidding(request,id):
 def Group_Payment_User_list(request,id):
     data=request.data
     try:  
-        token = data['token']
+        token = request.GET.get('token')
         userid = Token.objects.get(key=token).user_id  
         if userid is not None:
             CheckgroupAdmin  = UserGroup.objects.filter(id=id,createBy=userid).count()
@@ -594,7 +594,7 @@ def Group_Payment_User_list(request,id):
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding = groupbiddingdetails['id'],Status =5,
                 Mobilenumber  = int(mobilenumber.username) )
                 serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)
-            return Response(serializer.data)
+            return Response({'data':serializer.data})
         else:
             return Response({'Message' : 'Token Not found in our system'})
     except Exception as e:
@@ -633,7 +633,7 @@ def Group_Payments(request,id):
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding = groupbiddingdetails['id'],Status =5,
                 Mobilenumber  = int(mobilenumber.username) )
                 serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)
-            return Response(serializer.data)
+            return Response({'data':serializer.data})
         else:
             return Response({'Message' : 'Token Not found in our system'})
     except Exception as e:
@@ -647,7 +647,7 @@ def Group_Payments(request,id):
 def Selected_User(request,id):
     data=request.data
     try:
-        token = data['token']
+        token = request.GET.get('token')
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             Usermobilenumber = User.objects.get(id=userid).username
@@ -705,7 +705,7 @@ def Send_Amount(request,id):
 def Group_Payments_History(request,id):
     data=request.data
     try:
-        token = data['token']
+        token = request.GET.get('token')
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             Usermobilenumber = User.objects.filter(id=userid).username
@@ -717,7 +717,7 @@ def Group_Payments_History(request,id):
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(Mobilenumber =Usermobilenumber)          
         
             serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails)
-            return Response(serializer.data)
+            return Response({'data':serializer.data})
         else:
             return Response({'Message' : 'Token Not found in our system'})
     except Exception as e:
@@ -728,7 +728,7 @@ def Group_Payments_History(request,id):
 def Group_AmountRecived_History(request,id):
     data=request.data
     try:
-        token = data['token']
+        token = request.GET.get('token')
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             Usermobilenumber = User.objects.filter(id=userid).username
@@ -740,7 +740,7 @@ def Group_AmountRecived_History(request,id):
                 GroupAmountRecivedHistorydetails = AmountRecived.objects.filter(Mobilenumber =Usermobilenumber)          
         
             serializer = GroupAmountRecivedSerializer(GroupAmountRecivedHistorydetails)
-            return Response(serializer.data)
+            return Response({'data':serializer.data})
         else:
             return Response({'Message' : 'Token Not found in our system'})
     except Exception as e:
@@ -766,7 +766,7 @@ def update_user_details(request):
             UserDetailphoto.save()
             UserDetailsupdate = UserDetails.objects.get(User_id=userid)
             serializer = UserDetailsSerializer(UserDetailsupdate)
-            return Response(serializer.data)
+            return Response({'data':serializer.data})
         else:
             return Response({'Message' : 'Token Not found in our system'})
     except Exception as e:
