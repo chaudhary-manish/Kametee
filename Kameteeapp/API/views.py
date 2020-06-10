@@ -123,20 +123,21 @@ def login_user(request):
 # login user 
 @api_view(['POST'])
 def forget_password(request):
-    data=request.data
-    #return Response(data)  
-    MobileNo = data['MobileNumber']   
-    Password = data['Password'] 
-    userexist = User.objects.filter(username = MobileNo).count()
-    if userexist != 0:   
-        userdata =  User.objects.get(username=MobileNo) 
-        userdata.set_password(Password)
-        userdata.save()
-        passnew =  User.objects.get(username=MobileNo).password
-        return Response({"Message": 'Password Update successfully'}, status=200)
-    else:
-        return Response({"Message": 'User not exist in system','ErrorMessage':str(e)}, status=200)
-
+    try:
+        data=request.data 
+        MobileNo = data['MobileNumber']   
+        Password = data['Password'] 
+        userexist = User.objects.filter(username = MobileNo).count()
+        if userexist != 0:   
+            userdata =  User.objects.get(username=MobileNo) 
+            userdata.set_password(Password)
+            userdata.save()
+            passnew =  User.objects.get(username=MobileNo).password
+            return Response({"Message": 'Password Update successfully'}, status=200)
+        else:
+            return Response({"Message": 'User not exist in system'}, status=200)
+    except Exception as e:
+        return Response({'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
 
    
 
@@ -265,25 +266,26 @@ def groupmember_update(request,id):
 def group_chat(request):
     data=request.data
     try:        
-            if request.method == 'POST':
-                token = data['token']
-                offset = int(data['offset'])
-                userid = Token.objects.get(key=token).user_id
-                usergroupdata = UserGroup.objects.get(id = data['GroupID'])
-                messagedesc = data['Message']              
-                UserDetails = User.objects.get(id = userid)
-                GroupMessagedetails = GroupMessage(UserGroup =usergroupdata ,UserName= UserDetails.first_name,UserMobile=UserDetails.username , MessageDescription=messagedesc)
-                GroupMessagedetails.save()
-                GroupMessagedetails = GroupMessage.objects.filter(UserGroup =usergroupdata).order_by('-id')[0:2]
+        if request.method == 'POST':
+            token = data['token']            
+            userid = Token.objects.get(key=token).user_id
+            usergroupdata = UserGroup.objects.get(id = data['GroupID'])
+            messagedesc = data['Message']              
+            UserDetails = User.objects.get(id = userid)
+            GroupMessagedetails = GroupMessage(UserGroup =usergroupdata ,UserName= UserDetails.first_name,UserMobile=UserDetails.username , MessageDescription=messagedesc)
+            GroupMessagedetails.save()
+            GroupMessagedetails = GroupMessage.objects.filter(UserGroup =usergroupdata).order_by('-id')[0:15]
 
-            else:
-                token = request.GET.get('token')
-                offset = request.GET.get('offset')
-                usergroupdata = UserGroup.objects.get(id = request.GET.get('GroupID'))
-                GroupMessagedetails = GroupMessage.objects.filter(UserGroup =usergroupdata).order_by('-id')[0:2]
+        else:
+            token = request.GET.get('token')
+            offset = int(request.GET.get('offset'))
+            startoffset = int(request.GET.get('startoffset'))
 
-            serializer = GroupMessageSerializer(GroupMessagedetails,many=True)
-            return Response({'chatdata':serializer.data})                  
+            usergroupdata = UserGroup.objects.get(id = request.GET.get('GroupID'))
+            GroupMessagedetails = GroupMessage.objects.filter(UserGroup =usergroupdata).order_by('-id')[startoffset:offset]
+
+        serializer = GroupMessageSerializer(GroupMessagedetails,many=True)
+        return Response({'chatdata':serializer.data})                  
         
     except Exception as e:
         return Response({'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
