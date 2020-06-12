@@ -374,7 +374,7 @@ def Get_Group_ByStatus(request):
         if userid is not None:
             usermobilenumber = User.objects.get(id=userid).username            
             GroupDetail = UserGroup.objects.filter(groupStatus=status,id__in =
-                        GroupMember.objects.filter(Mobilenumber = usermobilenumber).values('UserGroup'),status=200)
+                        GroupMember.objects.filter(Mobilenumber = usermobilenumber).values('UserGroup'))
             serializer = StatEndGroupUserSerializer(GroupDetail, many = True)
             return Response({'data':serializer.data,'IsAdmin':False})
         else:
