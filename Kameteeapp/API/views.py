@@ -47,7 +47,6 @@ def Send_message(SMSTemplate,Phone_number,var1 ='',var2='',var3='',var4='',var5=
     elif SMSTemplate == 'UserRecivedVerification':
         payloads = json.dumps({"From": "KameTi","To": Phone_number,"VAR1": var1, "TemplateName": "UserRecivedVerification"})
 
-    
     if payloads is not None:
         header = {"content-type": "application/json"}
         conn.request("POST", "/API/V1/5e31f7cf-8dd5-11ea-9fa5-0200cd936042/ADDON_SERVICES/SEND/TSMS", payloads)
@@ -161,12 +160,14 @@ class GroupUser(generics.GenericAPIView,
 
     def get(self, request, id=None):
         if id:
-            return self.retrieve(request, id)
+            data= self.retrieve(request, id)
         else:
-            return self.list(request)
-
+            data =  self.list(request)
+        
+        return Response({"Message":"Please use another method for retrive data"},status=200)
     def post(self, request):
-        return self.create(request)
+        self.create(request)
+        return Response({"Message":"data Save successfully"},status=200)
 
     def perform_create(self, serializer):
         usergroup = serializer.save(createBy=self.request.user)
@@ -176,14 +177,15 @@ class GroupUser(generics.GenericAPIView,
         Send_message('groupregistration',Userdetail.username,usergroup.groupname , str(usergroup.AmountPerUser) ,str(usergroup.startDate))        
 
     def put(self, request, id=None):
-        return self.update(request, id)
+        self.update(request, id)
+        return Response({"Message":"data updated successfully"},status=200)
 
     def perform_update(self, serializer):
         serializer.save(created_by=self.request.user)        
 
     def delete(self, request, id=None):
         self.destroy(request, id)
-        return Response({'Status':'Data Delete successfully'})
+        return Response({'Message':'Data Deleted successfully'})
 
 #Add Member to Group
 @login_required(login_url="/login")
@@ -242,17 +244,17 @@ def groupmember_update(request,id):
             status = UserGroup.objects.get(id__in=GroupMember.objects.filter(id=id).values('UserGroup_id')).groupStatus
             UsergroupID = GroupMember.objects.filter(id=id).values('UserGroup_id')[0]  
             checkuserexist  = GroupMember.objects.filter(UserGroup_id=UsergroupID['UserGroup_id'],Mobilenumber = Mobilenumber).count()
-            if checkuserexist > 0:
-                return Response({'Message' :  'User already exist in this group'})
+           
             if status == 5:
                 if request.method == 'PUT':
-                    GroupMemberupdate =  GroupMember.objects.filter(id=id).update(Mobilenumber=Mobilenumber,UserName=UserName)
+                    if checkuserexist > 0:
+                         GroupMemberupdate =  GroupMember.objects.filter(id=id).update(UserName=UserName)
+                    else:
+                        GroupMemberupdate =  GroupMember.objects.filter(id=id).update(Mobilenumber=Mobilenumber,UserName=UserName)
+                    return Response({'Message' :"User update successfully "},status=200)
                 else:
                     GroupMember.objects.filter(id=id).delete()
-
-                GroupMemberlist = GroupMember.objects.filter(UserGroup_id  = UsergroupID['UserGroup_id'])
-                serializer = GroupMemberSerializer(GroupMemberlist,many=True)
-                return Response({'Memberlist': serializer.data})
+                    return Response({'Message' :"User Deleted successfully "},status=200)
             else:
                 return Response({'Message' :"Group no longer in open state"})
         else:
@@ -274,7 +276,7 @@ def group_chat(request):
             UserDetails = User.objects.get(id = userid)
             GroupMessagedetails = GroupMessage(UserGroup =usergroupdata ,UserName= UserDetails.first_name,UserMobile=UserDetails.username , MessageDescription=messagedesc)
             GroupMessagedetails.save()
-            GroupMessagedetails = GroupMessage.objects.filter(UserGroup =usergroupdata).order_by('-id')[0:15]
+            return Response({'Message':"Send Successfully"},status=200) 
 
         else:
             token = request.GET.get('token')
@@ -285,7 +287,7 @@ def group_chat(request):
             GroupMessagedetails = GroupMessage.objects.filter(UserGroup =usergroupdata).order_by('-id')[startoffset:offset]
 
         serializer = GroupMessageSerializer(GroupMessagedetails,many=True)
-        return Response({'chatdata':serializer.data})                  
+        return Response({'chatdata':serializer.data},status=200)                  
         
     except Exception as e:
         return Response({'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
@@ -310,9 +312,9 @@ def Group_Start(request,id = None):
                 serializer = StatEndGroupUserSerializer(Groupdetail)
                 return Response({'data':serializer.data})   
             else:
-                return Response({'Message' :" User Group Already Start"}) 
+                return Response({'Message' :" User Group Already Start"},status=200) 
         else:
-            return Response({'Message' : 'Token Not found in our system'})
+            return Response({'Message' : 'Token Not found in our system'},status=200)
     except Exception as e:
         return Response({'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
 
@@ -332,7 +334,7 @@ def Group_End(request,id = None):
             serializer = StatEndGroupUserSerializer(Groupdetail)
             return Response(serializer.data)
         else:
-            return Response({'Message' : 'Token Not found in our system'})
+            return Response({'Message' : 'Token Not found in our system'},status=200)
     except Exception as e:
         return Response({'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
 
@@ -353,9 +355,9 @@ def Group_Terminate(request,id = None):
                 serializer = StatEndGroupUserSerializer(Groupdetail)
                 return Response(serializer.data)
             else:
-                return Response({'Message' :"Group can't be termenated because it already in running state"})
+                return Response({'Message' :"Group can't be termenated because it already in running state"},status=200)
         else:
-            return Response({'Message' : 'Token Not found in our system'})
+            return Response({'Message' : 'Token Not found in our system'},status=200)
     except Exception as e:
         return Response({'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
 
@@ -372,11 +374,11 @@ def Get_Group_ByStatus(request):
         if userid is not None:
             usermobilenumber = User.objects.get(id=userid).username            
             GroupDetail = UserGroup.objects.filter(groupStatus=status,id__in =
-                        GroupMember.objects.filter(Mobilenumber = usermobilenumber).values('UserGroup'))
+                        GroupMember.objects.filter(Mobilenumber = usermobilenumber).values('UserGroup'),status=200)
             serializer = StatEndGroupUserSerializer(GroupDetail, many = True)
             return Response({'data':serializer.data,'IsAdmin':False})
         else:
-            return Response({'Message' : 'Token Not found in our system'})
+            return Response({'Message' : 'Token Not found in our system'},status=200)
     except Exception as e:
         return Response({'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
 
@@ -396,7 +398,7 @@ def Manage_Group_ByStatus(request):
             serializer = StatEndGroupUserSerializer(GroupDetail, many = True)
             return Response({'data':serializer.data,'IsAdmin':True})
         else:
-            return Response({'Message' : 'Token Not found in our system'})
+            return Response({'Message' : 'Token Not found in our system'},status=200)
     except Exception as e:
         return Response({'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
 
@@ -413,7 +415,7 @@ def Group_Bidding(request):
             serializer = StatEndGroupUserSerializer(GroupDetail, many = True)
             return Response({'data':serializer.data})
         else:
-            return Response({'Message' : 'Token Not found in our system'})
+            return Response({'Message' : 'Token Not found in our system'},status=200)
     except Exception as e:
          return Response({'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
 
