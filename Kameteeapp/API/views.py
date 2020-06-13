@@ -46,15 +46,15 @@ def Send_message(SMSTemplate,Phone_number,var1 ='',var2='',var3='',var4='',var5=
         payloads = json.dumps({"From": "KameTi","To": Phone_number,"VAR1": var1, "VAR2": var2 ,"VAR3": var3, "TemplateName": "PaymentRecived"})
     elif SMSTemplate == 'UserRecivedVerification':
         payloads = json.dumps({"From": "KameTi","To": Phone_number,"VAR1": var1, "TemplateName": "UserRecivedVerification"})
-
-    if payloads is not None:
-        header = {"content-type": "application/json"}
-        conn.request("POST", "/API/V1/5e31f7cf-8dd5-11ea-9fa5-0200cd936042/ADDON_SERVICES/SEND/TSMS", payloads)
-        res = conn.getresponse()
-        data = res.read()        
-        return data.decode("utf-8")
-    else:
-        return True
+    return True
+    # if payloads is not None:
+    #     header = {"content-type": "application/json"}
+    #     conn.request("POST", "/API/V1/5e31f7cf-8dd5-11ea-9fa5-0200cd936042/ADDON_SERVICES/SEND/TSMS", payloads)
+    #     res = conn.getresponse()
+    #     data = res.read()        
+    #     return data.decode("utf-8")
+    # else:
+    #     return True
 
 # OTP generate to send for number verificaiton
 @api_view(['POST'])
@@ -188,7 +188,6 @@ class GroupUser(generics.GenericAPIView,
         return Response({'Message':'Data Deleted successfully'})
 
 #Add Member to Group
-@login_required(login_url="/login")
 @api_view(['POST'])
 def adduser_togroup(request):
     data=request.data
@@ -205,7 +204,7 @@ def adduser_togroup(request):
             GroupMemberlist = GroupMember.objects.filter(UserGroup_id=data['GroupID'])
             serializer = GroupMemberSerializer(GroupMemberlist,many=True)
             data = Send_message('groupregistration',userMobileno,usergroup.groupname , str(usergroup.AmountPerUser) ,str(usergroup.startDate))
-            return Response({'userlist' : serializer.data,'Response' : data,'Msg':''})
+            return Response({'userlist' : serializer.data,'Response' : data,'Message':'User Add successgully'})
         else:
             return Response({'Message' : 'Token Not found in our system'})
    
@@ -284,7 +283,7 @@ def group_chat(request):
             startoffset = int(request.GET.get('startoffset'))
 
             usergroupdata = UserGroup.objects.get(id = request.GET.get('GroupID'))
-            GroupMessagedetails = GroupMessage.objects.filter(UserGroup =usergroupdata).order_by('-id')[startoffset:offset]
+            GroupMessagedetails = GroupMessage.objects.filter(UserGroup =usergroupdata).order_by('id')[startoffset:offset]
 
         serializer = GroupMessageSerializer(GroupMessagedetails,many=True)
         return Response({'chatdata':serializer.data},status=200)                  
@@ -298,10 +297,11 @@ def group_chat(request):
 
 # to start group group of first time insert bidding date concept 
 @api_view(['PUT'])
-def Group_Start(request,id = None):
+def Group_Start(request):
     data=request.data    
     try:
         token = data['token']
+        id = data['GroupID']
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             GroupDetaildetails = UserGroup.objects.get(id=id,createBy = userid )
@@ -385,8 +385,7 @@ def Get_Group_ByStatus(request):
 
 # let list of group for managing  this only fetch for admin only
 @api_view(['GET'])
-def Manage_Group_ByStatus(request):
-   
+def Manage_Group_ByStatus(request):   
     try:
         token = request.GET.get('token')
         status = int(request.GET.get('status')) 
@@ -422,12 +421,11 @@ def Group_Bidding(request):
 
 # only admin can activate group admin
 @api_view(['PUT'])
-def Start_Group_Bidding(request,id):
-    try:
-        if id is None:
-            return Response({'Message' :"Group ID requried"})    
+def Start_Group_Bidding(request):
+    try:            
         data=request.data
         token = data['token']
+        id = data['GroupID']
         userid = Token.objects.get(key=token).user_id
         # validate that user exist in our database or not
         if userid is not None:
@@ -464,7 +462,7 @@ def Start_Group_Bidding(request,id):
                     todate  = fromdate + timedelta(days=1)
                     Send_message('Startbiddingalert',Userdetail.username,UserGroupDetails.groupname , str(fromdate) ,str(todate))
 
-                UserGroup.objects.filter(id=id,createBy = userid ).update(groupStatus = 15)
+                UserGroup.objects.filter(id=id,createBy = userid ).update(groupStatus = 15,biddingflag=0)
                 Groupdetail = UserGroup.objects.get(id=id,createBy = userid )
                 serializer = StatEndGroupUserSerializer(Groupdetail)
                 return Response({'data':serializer.data},status=200) 
@@ -477,10 +475,10 @@ def Start_Group_Bidding(request,id):
 
 # fetch data for admin and single user of particular group
 @api_view(['GET'])
-def Group_Bidding_User_list(request,id):
-    
+def Group_Bidding_User_list(request):    
     try:
         token = request.GET.get('token')
+        id = request.GET.get('GroupID')
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             UserGroupDetails = UserGroup.objects.filter(id=id,createBy=userid)
@@ -560,7 +558,7 @@ def Select_Group_Bidding(request,id):
                     fromdate = datetime.date.today()   +  timedelta(days=7)    
                     #Send_message('SelectedbiddingAlert',GroupMemberlist.Mobilenumber,GroupUserDetails.groupname ,str(totalamount),str(AmountPaidbyPerUser), str(fromdate) )
                 GroupBiddingEntries.objects.filter(id=id,SelectedMobileNumber = UserMobileNumber).update(IsSelected=1)    
-                GroupBidding.objects.filter(id=GroupBiddingEntriesdetails.GroupBidding_id).update(selectedName=SelectedUserName,SelectedMobileNumber = UserMobileNumber,IsSelected=1)
+                GroupBidding.objects.filter(id=GroupBiddingEntriesdetails.GroupBidding_id).update(selectedName=SelectedUserName,SelectedMobileNumber = UserMobileNumber,IsSelected=1,biddingAmount = totalamount)
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding=GroupBiddingDetails)
                 serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)
                 return Response({'data':serializer.data},status=200)
@@ -573,16 +571,14 @@ def Select_Group_Bidding(request,id):
 
 # group Payments user list after selection
 @api_view(['GET'])
-def Group_Payment_User_list(request,id):
-   
+def Group_Payment_User_list(request):   
     try:  
         token = request.GET.get('token')
+        id = request.GET.get('GroupID')
         userid = Token.objects.get(key=token).user_id  
         if userid is not None:
-            CheckgroupAdmin  = UserGroup.objects.filter(id=id,createBy=userid).count()
-            
-            UserGroupDetails = UserGroup.objects.get(id=id)   
-            
+            CheckgroupAdmin  = UserGroup.objects.filter(id=id,createBy=userid).count()            
+            UserGroupDetails = UserGroup.objects.get(id=id)             
             groupbiddingdetails = GroupBidding.objects.filter(UserGroup = UserGroupDetails,Cyclenumber=int(UserGroupDetails.biddgingCycle)).aggregate(id=Max('pk'))
             
             if CheckgroupAdmin == 1:
@@ -608,7 +604,7 @@ def Group_Payments(request,id):
         userid = Token.objects.get(key=token).user_id 
         if userid is not None:
             PaidAmount = data['AmountPaid']
-            UserMobileNumber = data['Mobilenumber']
+            UserMobileNumber = data['MobileNumber']
             GroupPaymentHistorydetails = GroupPaymentHistory.objects.get(id=id,Mobilenumber = UserMobileNumber)
             usergrupdetail  = UserGroup.objects.get(id=GroupPaymentHistorydetails.UserGroup_id)
             groupbiddingdetails = GroupBidding.objects.filter(UserGroup = usergrupdetail,Cyclenumber=int(usergrupdetail.biddgingCycle)).aggregate(id=Max('pk'))
@@ -643,17 +639,20 @@ def Group_Payments(request,id):
 
 # get Selected user list for current cycle
 @api_view(['get'])
-def Selected_User(request,id):
-    
+def Selected_User(request):    
     try:
         token = request.GET.get('token')
+        id  = request.GET.get('GroupID')
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             Usermobilenumber = User.objects.get(id=userid).username
             usergroupdetails=  UserGroup.objects.get(id=id,createBy=userid)
             selecteduser = GroupBidding.objects.filter(Cyclenumber=usergroupdetails.biddgingCycle,
                             UserGroup=usergroupdetails,IsSelected = 1)[0]
-            return Response(selecteduser.SelectedMobileNumber)
+            serializer = GroupBiddingSerializer(selecteduser)
+            return Response({'data':serializer.data},status=200)
+
+            return Response({"data":selecteduser.SelectedMobileNumber},status=200)
             GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(id=id,Mobilenumber = UserMobileNumber)[0]
             totalAmountDue = int(GroupPaymentHistorydetails.ActualAmount) - int(PaidAmount)
             GroupPaymentHistory.objects.filter(GroupBidding_id=id,Mobilenumber = UserMobileNumber).update(AmountPaid=PaidAmount,AmountDue=totalAmountDue)
@@ -665,17 +664,17 @@ def Selected_User(request,id):
 
 # Send Amount to the user who is selected
 @api_view(['PUT'])
-def Send_Amount(request,id):
+def Send_Amount(request):
     data=request.data
     try:
         token = data['token']
+        id  = data['GroupID']
         userid = Token.objects.get(key=token).user_id  
         if userid is not None:
-            CheckgroupAdmin  = UserGroup.objects.filter(id=id,createBy=userid) 
-            if CheckgroupAdmin.count() == 1:
+            CheckgroupAdmin  = UserGroup.objects.get(id=id,createBy=userid) 
+            if CheckgroupAdmin.usercount is not None:
                 UserGroupDetails=  UserGroup.objects.get(id=id,createBy=userid)
-                biddingcycle = GroupBidding.objects.filter(UserGroup = UserGroupDetails).count()  
-                
+                biddingcycle = GroupBidding.objects.filter(UserGroup = UserGroupDetails).count()                  
                 groupbiddingDetail = GroupBidding.objects.filter(UserGroup = UserGroupDetails,Cyclenumber=biddingcycle)[0]
                 
                 Amountdetails = AmountRecived(UserGroup = UserGroupDetails,ActualAmount= groupbiddingDetail.biddingAmount ,ActualRecived= groupbiddingDetail.biddingAmount ,
@@ -683,13 +682,13 @@ def Send_Amount(request,id):
                                 Recivermobile =groupbiddingDetail.SelectedMobileNumber ,RecivedDate= datetime.datetime.today())
                 Amountdetails.save()
                 # 15 means bidding cycle close amount recived but group still is in active state
-                GroupBidding.objects.filter(UserGroup = UserGroupDetails,Cyclenumber=biddingcycle).update(BiddingStatus=15)
-                if CheckgroupAdmin.biddgingCycle == CheckgroupAdmin.usercount:
+                GroupBidding.objects.filter(UserGroup = UserGroupDetails,Cyclenumber=biddingcycle).update(BiddingStatus=20)
+                if biddingcycle == CheckgroupAdmin.usercount:
                     # 20 means group close all cycle complete 
                     UserGroup.objects.filter(id=id,createBy=userid).update(groupStatus = 20)
                     GroupBidding.objects.filter(UserGroup = UserGroupDetails,Cyclenumber=biddingcycle).update(BiddingStatus=20)
                 else:
-                    UserGroup.objects.filter(id=id,createBy=userid).update(biddingdate = CheckgroupAdmin.biddingdate + datetime.timedelta(30))
+                    UserGroup.objects.filter(id=id,createBy=userid).update(groupStatus = 10,biddingdate = CheckgroupAdmin.biddingdate + datetime.timedelta(30))
                 return Response({'Message' :"Payemts successfully"},status=200)
             else:
                 return Response({'Message' :"You dont have permission to send amount"})
@@ -701,21 +700,21 @@ def Send_Amount(request,id):
 
 # get Gruop Payments history
 @api_view(['Get'])
-def Group_Payments_History(request,id):
-   
+def Group_Payments_History(request):   
     try:
         token = request.GET.get('token')
         userid = Token.objects.get(key=token).user_id
+        id = request.GET.get('GroupID')
         if userid is not None:
-            Usermobilenumber = User.objects.filter(id=userid).username
-            admincheck  = UserGroup.objects.filter(id=id,createBy =Usermobilenumber).count()
+            Usermobilenumber = User.objects.get(id=userid).username
+            admincheck  = UserGroup.objects.filter(id=id,createBy =userid).count()
             UserGroupDetails=  UserGroup.objects.get(id=id,createBy=userid)
             if admincheck == 0:
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(UserGroup = UserGroupDetails,Mobilenumber =Usermobilenumber)
             else:
-                GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(Mobilenumber =Usermobilenumber)          
+                GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(UserGroup = UserGroupDetails)          
         
-            serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails)
+            serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails,many=True)
             return Response({'data':serializer.data},status=200)
         else:
             return Response({'Message' : 'Token Not found in our system'})
@@ -724,21 +723,21 @@ def Group_Payments_History(request,id):
 
 
 @api_view(['Get'])
-def Group_AmountRecived_History(request,id):
-    
+def Group_AmountReceived_History(request):    
     try:
         token = request.GET.get('token')
+        id = request.GET.get('GroupID')
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
-            Usermobilenumber = User.objects.filter(id=userid).username
-            admincheck  = UserGroup.objects.filter(id=id,createBy =Usermobilenumber).count()
+            Usermobilenumber = User.objects.get(id=userid).username
+            admincheck  = UserGroup.objects.filter(id=id,createBy =userid).count()
             UserGroupDetails=  UserGroup.objects.get(id=id,createBy=userid)
-            if admincheck == 0:
-                GroupAmountRecivedHistorydetails = AmountRecived.objects.filter(UserGroup = UserGroupDetails,Recivermobile =Usermobilenumber)
-            else:
-                GroupAmountRecivedHistorydetails = AmountRecived.objects.filter(Mobilenumber =Usermobilenumber)          
-        
-            serializer = GroupAmountRecivedSerializer(GroupAmountRecivedHistorydetails)
+            # if admincheck == 0:
+            #     GroupAmountRecivedHistorydetails = AmountRecived.objects.filter(UserGroup = UserGroupDetails,Recivermobile =Usermobilenumber)
+            # else:
+            #     GroupAmountRecivedHistorydetails = AmountRecived.objects.filter(Mobilenumber =Usermobilenumber)          
+            GroupAmountRecivedHistorydetails = AmountRecived.objects.filter(UserGroup = UserGroupDetails)
+            serializer = GroupAmountRecivedSerializer(GroupAmountRecivedHistorydetails,many=True)
             return Response({'data':serializer.data},status=200)
         else:
             return Response({'Message' : 'Token Not found in our system'})

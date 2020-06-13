@@ -137,7 +137,7 @@ class GroupMemberSerializer(serializers.ModelSerializer):
             "id",
             "UserGroup",
             "Mobilenumber",
-            "UserName"
+            "UserName",
         ]
 
 class GroupBiddingSerializer(serializers.ModelSerializer):
@@ -145,12 +145,12 @@ class GroupBiddingSerializer(serializers.ModelSerializer):
         model = GroupBidding
         fields = [
             "id",
-            "GroupMember",
             "UserGroup",
             "ActualAmount",
+            "selectedName",
+            "SelectedMobileNumber",
             "biddingAmount",
-            "Cyclenumber",
-            "IsSelect"
+            "IsSelected"
         ]
 
 class StatEndGroupUserSerializer(serializers.ModelSerializer):
