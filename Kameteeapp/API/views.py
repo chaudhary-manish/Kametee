@@ -432,6 +432,7 @@ def Start_Group_Bidding(request):
             Userdetail  =User.objects.get(id=userid)
             UserGroupDetails = UserGroup.objects.get(id=id)
             ActualTotalAmount = UserGroupDetails.usercount * UserGroupDetails.AmountPerUser
+           
             if UserGroupDetails.biddgingCycle == 2:
                 minloss = 0
             else:
@@ -504,7 +505,7 @@ def Group_Bidding_User_list(request):
 
 # save bidding amount of group of individuals
 @api_view(['PUT'])
-def Save_Group_Bidding(request,id):
+def Save_Group_Bidding(request):
     data=request.data
     try:
         token = data['token']
@@ -513,6 +514,7 @@ def Save_Group_Bidding(request,id):
             Usermobilenumber = User.objects.get(id=userid).username
             biddingAmount = data['BiddingAmount']
             UserMobileNumber = data['MobileNumber']
+            id = data['GroupBiddingEntriesID']
             minloss = GroupBiddingEntries.objects.get(id=id,SelectedMobileNumber = UserMobileNumber).MinCyclelossAmount
             if int(minloss) > int(biddingAmount):
                 return Response({'Message' : 'Loss not less than' ,'value':minloss})  
@@ -530,22 +532,22 @@ def Save_Group_Bidding(request,id):
 # update user group status to 15 ie bidding close or final
 # id is groupbiddingentriesID 
 @api_view(['PUT'])
-def Select_Group_Bidding(request,id):
+def Select_Group_Bidding(request):
     data=request.data
     try:
         token = data['token']
         userid = Token.objects.get(key=token).user_id
         if userid is not  None:
-            UserMobileNumber = data['MobileNumber']   
-            # Get Select Bidding entries Details
-        
+            UserMobileNumber = data['MobileNumber']
+            id = data['GroupBiddingEntriesID']   
+            # Get Select Bidding entries Details        
             GroupBiddingEntriesdetails = GroupBiddingEntries.objects.get(id=id,SelectedMobileNumber = UserMobileNumber)
             
             GroupBiddingDetails  = GroupBidding.objects.get(id=GroupBiddingEntriesdetails.GroupBidding_id)
             GroupUserDetails   =   UserGroup.objects.get(id=GroupBiddingDetails.UserGroup_id) 
             #cal Amount paid by per user
             AmountPaidbyPerUser =int ((GroupBiddingEntriesdetails.TotalAmount - GroupBiddingEntriesdetails.BidlossAmount)/GroupUserDetails.usercount)
-            totalamount = int(AmountPaidbyPerUser * GroupUserDetails.usercount)
+            totalbiddingamount = int(AmountPaidbyPerUser * GroupUserDetails.usercount)
             SelectedUserName = GroupBiddingEntriesdetails.selectedName
             if GroupBiddingEntriesdetails.IsSelected == 0:       
                 GroupMemberlists = GroupMember.objects.filter(UserGroup = GroupUserDetails)    
@@ -558,10 +560,10 @@ def Select_Group_Bidding(request,id):
                     fromdate = datetime.date.today()   +  timedelta(days=7)    
                     #Send_message('SelectedbiddingAlert',GroupMemberlist.Mobilenumber,GroupUserDetails.groupname ,str(totalamount),str(AmountPaidbyPerUser), str(fromdate) )
                 GroupBiddingEntries.objects.filter(id=id,SelectedMobileNumber = UserMobileNumber).update(IsSelected=1)    
-                GroupBidding.objects.filter(id=GroupBiddingEntriesdetails.GroupBidding_id).update(selectedName=SelectedUserName,SelectedMobileNumber = UserMobileNumber,IsSelected=1,biddingAmount = totalamount)
+                GroupBidding.objects.filter(id=GroupBiddingEntriesdetails.GroupBidding_id).update(selectedName=SelectedUserName,SelectedMobileNumber = UserMobileNumber,IsSelected=1,biddingAmount = totalbiddingamount)
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding=GroupBiddingDetails)
                 serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)
-                return Response({'data':serializer.data},status=200)
+                return Response({'data':serializer.data,'Message':'user selected successfully'},status=200)
             else:
                 return Response({'Message':"User Already Selected for this cycle"})
         else:
@@ -576,6 +578,7 @@ def Group_Payment_User_list(request):
         token = request.GET.get('token')
         id = request.GET.get('GroupID')
         userid = Token.objects.get(key=token).user_id  
+        
         if userid is not None:
             CheckgroupAdmin  = UserGroup.objects.filter(id=id,createBy=userid).count()            
             UserGroupDetails = UserGroup.objects.get(id=id)             
@@ -597,7 +600,7 @@ def Group_Payment_User_list(request):
 
 # add Recived Amount by admin after user group bidding selected 
 @api_view(['PUT'])
-def Group_Payments(request,id):
+def Group_Payments(request):
     data=request.data
     try:
         token = data['token']
@@ -605,6 +608,7 @@ def Group_Payments(request,id):
         if userid is not None:
             PaidAmount = data['AmountPaid']
             UserMobileNumber = data['MobileNumber']
+            id = data['GroupPaymentID']
             GroupPaymentHistorydetails = GroupPaymentHistory.objects.get(id=id,Mobilenumber = UserMobileNumber)
             usergrupdetail  = UserGroup.objects.get(id=GroupPaymentHistorydetails.UserGroup_id)
             groupbiddingdetails = GroupBidding.objects.filter(UserGroup = usergrupdetail,Cyclenumber=int(usergrupdetail.biddgingCycle)).aggregate(id=Max('pk'))
@@ -628,7 +632,7 @@ def Group_Payments(request,id):
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding = groupbiddingdetails['id'],Status =5,
                 Mobilenumber  = int(mobilenumber.username) )
                 serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)
-            return Response({'data':serializer.data},status=200)
+            return Response({'data':serializer.data,'Message':'Payments done Successfully'},status=200)
         else:
             return Response({'Message' : 'Token Not found in our system'})
     except Exception as e:
@@ -669,18 +673,22 @@ def Send_Amount(request):
     try:
         token = data['token']
         id  = data['GroupID']
+        AmountSendtoUser  = data['AmountSend']
         userid = Token.objects.get(key=token).user_id  
-        if userid is not None:
+        if userid is not None:            
             CheckgroupAdmin  = UserGroup.objects.get(id=id,createBy=userid) 
             if CheckgroupAdmin.usercount is not None:
+                
                 UserGroupDetails=  UserGroup.objects.get(id=id,createBy=userid)
-                biddingcycle = GroupBidding.objects.filter(UserGroup = UserGroupDetails).count()                  
+                biddingcycle = UserGroupDetails.biddgingCycle                            
                 groupbiddingDetail = GroupBidding.objects.filter(UserGroup = UserGroupDetails,Cyclenumber=biddingcycle)[0]
                 
                 Amountdetails = AmountRecived(UserGroup = UserGroupDetails,ActualAmount= groupbiddingDetail.biddingAmount ,ActualRecived= groupbiddingDetail.biddingAmount ,
-                                Cyclenumber = biddingcycle,RevicerName = groupbiddingDetail.selectedName,
+                                Cyclenumber = biddingcycle,RevicerName = groupbiddingDetail.selectedName,Amountsend =AmountSendtoUser,
                                 Recivermobile =groupbiddingDetail.SelectedMobileNumber ,RecivedDate= datetime.datetime.today())
                 Amountdetails.save()
+                
+                GroupPaymentHistory.objects.filter(UserGroup = UserGroupDetails).update(Status = 20)
                 # 15 means bidding cycle close amount recived but group still is in active state
                 GroupBidding.objects.filter(UserGroup = UserGroupDetails,Cyclenumber=biddingcycle).update(BiddingStatus=20)
                 if biddingcycle == CheckgroupAdmin.usercount:
@@ -688,7 +696,7 @@ def Send_Amount(request):
                     UserGroup.objects.filter(id=id,createBy=userid).update(groupStatus = 20)
                     GroupBidding.objects.filter(UserGroup = UserGroupDetails,Cyclenumber=biddingcycle).update(BiddingStatus=20)
                 else:
-                    UserGroup.objects.filter(id=id,createBy=userid).update(groupStatus = 10,biddingdate = CheckgroupAdmin.biddingdate + datetime.timedelta(30))
+                    UserGroup.objects.filter(id=id,createBy=userid).update(groupStatus = 10,biddingdate = CheckgroupAdmin.biddingdate + datetime.timedelta(30),biddgingCycle =biddingcycle+1)
                 return Response({'Message' :"Payemts successfully"},status=200)
             else:
                 return Response({'Message' :"You dont have permission to send amount"})

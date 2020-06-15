@@ -38,13 +38,13 @@ urlpatterns =[
     path('Biddinglist',Group_Bidding_User_list,name='Group_Bidding_User_list'),
 
 
-    path('Save_Group_Bidding/<int:id>',Save_Group_Bidding,name='Save_Group_Bidding'),
-    path('Select_Group_Bidding/<int:id>',Select_Group_Bidding,name='Select_Group_Bidding'),
+    path('Save_Group_Bidding',Save_Group_Bidding,name='Save_Group_Bidding'),
+    path('Select_Group_Bidding',Select_Group_Bidding,name='Select_Group_Bidding'),
     
     # Fetch payments list and paid amount to the users
     path('Group_Payment_User_list',Group_Payment_User_list,name='Group_Payment_User_list'),
     # payments to the particular group
-     path('Group_Payments/<int:id>',Group_Payments,name='Group_Payments'),
+     path('Group_Payments',Group_Payments,name='Group_Payments'),
      path('SelectUserlist',Selected_User,name='Selected_User for Amount recived'),
       
        path('update_user_details',update_user_details,name='update_user_details'),
