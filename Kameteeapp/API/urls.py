@@ -8,6 +8,7 @@ app_name = 'Kameteeapp'
 
 urlpatterns =[
     path('OTPVerify',OTP_Generate,name='OTP_Generate'),
+     path('contactdetails', Contact_Details, name='Contact_Details'),
     path('SendamountOTPVerify',OTP_Generate_SendAmount,name='OTP_Generate_SendAmount'),
     path('RegisterUser',RegisterUser,name='RegisterUser'),
     path('login',login_user,name='loginuser'),
@@ -57,6 +58,9 @@ urlpatterns =[
     path('groupuserchat',group_chat,name='group_chat'),
     path('PaymentsHistory',Group_Payments_History,name='Group_Payments_History'),
     path('AmountReceivedHistory',Group_AmountReceived_History,name='Group_AmountReceived_History'),
+
+     path('Biddinglist_for_user',Group_Bidding_User_list_for_User,name='Group_Bidding_User_list_for_User'),
+    path('Group_Payment_User_list_for_user',Group_Payment_User_list_for_user,name='Group_Payment_User_list_for_user'),
 
     
 ]
