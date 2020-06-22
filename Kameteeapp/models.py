@@ -94,7 +94,7 @@ class  AmountRecived(models.Model):
     UserGroup= models.ForeignKey(UserGroup, on_delete=models.CASCADE)
     ActualAmount = models.DecimalField(max_digits=8, decimal_places=2) 
     ActualRecived = models.DecimalField(max_digits=8, decimal_places=2) 
-    Cyclenumber = models.IntegerField()
+    Cyclenumber =  models.DecimalField(max_digits=8, decimal_places=2)
     Amountsend = models.IntegerField(default=0)
     RevicerName = models.TextField()
     Recivermobile =models.BigIntegerField() 
