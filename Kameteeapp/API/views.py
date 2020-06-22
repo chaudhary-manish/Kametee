@@ -81,10 +81,13 @@ def Contact_Details(request):
         contactDetails = {}
         #return Response(userid)
         if userid is not None:
-            contactDetails.update( {'email' : 'chaudhary94rc@gmail.com'} )
+            contactDetails.update( {'enquiryemail' : 'chaudhary94rc@gmail.com'} )
+            contactDetails.update( {'techsupportemail' : 'chaudhary94rc@gmail.com'} )
             contactDetails.update( {'contactNumber' : 8279463818} )
             contactDetails.update( {'whatappNumber' : 9412289096} )
-            contactDetails.update( {'companyemail' : 9412289096} )
+            contactDetails.update( {'address' : 'C 603 Amrapali Empire Crossing rebublic'} )
+            contactDetails.update( {'Longitude' : ''} )
+            contactDetails.update( {'Latitude' : ''} )
  
             return Response({'contactDetails':contactDetails,'Response' : True,'Message' :''},status=200)
         else:
