@@ -89,13 +89,13 @@ class GroupPaymentHistory(models.Model):
     Status = models.IntegerField(default=5)
     created_at = models.DateTimeField(default=timezone.now)
 
-class  (models.Model):   
+class  AmountRecived(models.Model):   
     id = models.AutoField(primary_key=True)
     UserGroup= models.ForeignKey(UserGroup, on_delete=models.CASCADE)
     ActualAmount = models.DecimalField(max_digits=8, decimal_places=2) 
     ActualRecived = models.DecimalField(max_digits=8, decimal_places=2) 
     Cyclenumber = models.IntegerField()
-    Amountsend = models.DecimalField(max_digits=8, decimal_places=2)
+    Amountsend = models.IntegerField(default=0)
     RevicerName = models.TextField()
     Recivermobile =models.BigIntegerField() 
     RecivedDate=models.DateField(max_length=12)
