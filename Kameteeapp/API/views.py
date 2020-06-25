@@ -513,7 +513,7 @@ def Group_Bidding_User_list_for_User(request):
             UserGroupDetails = UserGroup.objects.get(id=id)
             usermobile  =  User.objects.get(id=userid)
             Groupbiddingdetails = GroupBidding.objects.filter(UserGroup = UserGroupDetails,IsSelected =0).aggregate(id=Max('pk'))
-            GroupBiddingEntriesdetails = GroupBiddingEntries.objects.filter(GroupBidding =Groupbiddingdetails["id"],IsSelected =0,SelectedMobileNumber =usermobile)
+            GroupBiddingEntriesdetails = GroupBiddingEntries.objects.filter(GroupBidding =Groupbiddingdetails["id"],IsSelected =0,SelectedMobileNumber =usermobile.username)
             serializer = GroupBiddingEntriesSerializer(GroupBiddingEntriesdetails, many = True)
             return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
         else:
