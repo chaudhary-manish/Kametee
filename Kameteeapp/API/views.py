@@ -514,7 +514,7 @@ def Group_Bidding_User_list_for_User(request):
             usermobile  =  User.objects.get(id=userid)
             Groupbiddingdetails = GroupBidding.objects.filter(UserGroup = UserGroupDetails,IsSelected =0).aggregate(id=Max('pk'))
             GroupBiddingEntriesdetails = GroupBiddingEntries.objects.filter(GroupBidding =Groupbiddingdetails["id"],IsSelected =0,SelectedMobileNumber =usermobile.username)
-            serializer = GroupBiddingEntriesSerializer(GroupBiddingEntriesdetails, many = True)
+            serializer = GroupBiddingEntriesSerializer(GroupBiddingEntriesdetails)
             return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False})
@@ -635,7 +635,7 @@ def Group_Payment_User_list_for_user(request):
             mobilenumber =User.objects.get(id=userid)
             GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding = groupbiddingdetails['id'],Status =5,
             Mobilenumber  = int(mobilenumber.username) )
-            serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)
+            serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails)
             return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False},status=200)
@@ -726,7 +726,7 @@ def Selected_User(request):
             selecteduser = GroupBidding.objects.filter(Cyclenumber=usergroupdetails.biddgingCycle,
                             UserGroup=usergroupdetails,IsSelected = 1)[0]
             serializer = GroupBiddingSerializer(selecteduser)
-            return Response({'data':serializer.data},status=200)
+            return Response({'data':serializer.data,'Message':'','Response' :True},status=200)
 
             return Response({"data":selecteduser.SelectedMobileNumber},status=200)
             GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(id=id,Mobilenumber = UserMobileNumber)[0]
