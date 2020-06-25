@@ -76,7 +76,7 @@ def OTP_Generate(request):
 def Contact_Details(request):
     data=request.data
     try:
-        token = data['token']    
+        token = request.GET.get('token')  
         userid = Token.objects.get(key=token).user_id
         contactDetails = {}
         #return Response(userid)
