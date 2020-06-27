@@ -67,7 +67,7 @@ def OTP_Generate(request):
     usercheck  =  User.objects.filter(username = MobileNo)    
     if usercheck.count() > 0:
         data = Send_message('OTPVerification',MobileNo,random)    
-        return Response({"radomno": random,'Response' : True}, status=200)
+        return Response({"radomno": random,'Response' : True,'Message':''}, status=200)
     else:
         return Response({"radomno": random,'Response' : False,'Message' : 'You No already exist in our system'}, status=200)
 
@@ -103,7 +103,7 @@ def OTP_Generate_SendAmount(request):
     MobileNo = data['MobileNumber']
     random = randint(1001, 9999)
     data = Send_message('UserRecivedVerification',MobileNo,random) 
-    return Response({"radomno": random ,'Response' : data}, status=200)
+    return Response({"radomno": random ,'Response' : data,'Message':''}, status=200)
 
 # Signup User 
 @api_view(['POST'])
@@ -115,7 +115,7 @@ def RegisterUser(request):
     MobileNo =data['MobileNumber']
     token, created = Token.objects.get_or_create(user=user)
     data = Send_message('New-Registration',MobileNo,MobileNo) 
-    return Response({"token": token.key,'Response' : True}, status=200)
+    return Response({"token": token.key,'Response' : True,'Message':''}, status=200)
 
 #@login_required(login_url="/login/")
 @api_view(['POST'])
@@ -276,7 +276,7 @@ def groupmember_update(request,id):
                          GroupMemberupdate =  GroupMember.objects.filter(id=id).update(UserName=UserName)
                     else:
                         GroupMemberupdate =  GroupMember.objects.filter(id=id).update(Mobilenumber=Mobilenumber,UserName=UserName)
-                    return Response({'Message' :"User update successfully "},status=200)
+                    return Response({'Message' :"User update successfully ",'Response' :True},status=200)
                 else:
                     GroupMember.objects.filter(id=id).delete()
                     return Response({'Message' :"User Deleted successfully ",'Response' :True},status=200)
@@ -312,7 +312,7 @@ def group_chat(request):
             GroupMessagedetails = GroupMessage.objects.filter(UserGroup =usergroupdata).order_by('id')[startoffset:offset]
 
         serializer = GroupMessageSerializer(GroupMessagedetails,many=True)
-        return Response({'chatdata':serializer.data,'Response' :True},status=200)                  
+        return Response({'chatdata':serializer.data,'Response' :True,'Message':''},status=200)                  
         
     except Exception as e:
         return Response({'Response' :False,'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
@@ -336,7 +336,7 @@ def Group_Start(request):
                 UserGroup.objects.filter(id=id,createBy = userid ).update(usercount=groupmembercount,groupStatus=10,biddgingCycle=1,biddingdate = datetime.datetime.today())
                 Groupdetail = UserGroup.objects.get(id=id,createBy = userid )
                 serializer = StatEndGroupUserSerializer(Groupdetail)
-                return Response({'data':serializer.data,'Response' :True})   
+                return Response({'data':serializer.data,'Response' :True,'Message':''})   
             else:
                 return Response({'Message' :" User Group Already Start",'Response' :True},status=200) 
         else:
@@ -358,7 +358,7 @@ def Group_End(request,id = None):
             GroupDetail = UserGroup.objects.filter(id=id,createBy = userid ).update(groupStatus=20,biddingflag = 0)
             Groupdetail = UserGroup.objects.get(id=id,createBy = userid )
             serializer = StatEndGroupUserSerializer(Groupdetail)
-            return Response({'GruopList':serializer.data,'Response' :True},status=200)
+            return Response({'GruopList':serializer.data,'Response' :True,'Message':''},status=200)
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False},status=200)
     except Exception as e:
@@ -379,13 +379,13 @@ def Group_Terminate(request,id = None):
                 GroupDetail = UserGroup.objects.filter(id=id,createBy = userid ).update(groupStatus=25)
                 Groupdetail = UserGroup.objects.get(id=id,createBy = userid )
                 serializer = StatEndGroupUserSerializer(Groupdetail)
-                return Response({'GroupList':serializer.data,'Response' :True},status=200)
+                return Response({'GroupList':serializer.data,'Response' :True,'Message':''},status=200)
             else:
-                return Response({'Message' :"Group can't be termenated because it already in running state"},status=200)
+                return Response({'Message' :"Group can't be termenated because it already in running state",'Response' :True},status=200)
         else:
-            return Response({'Message' : 'Token Not found in our system'},status=200)
+            return Response({'Message' : 'Token Not found in our system','Response' :False},status=200)
     except Exception as e:
-        return Response({'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
+        return Response({'Message' : 'Something Went worng either token or variable name format','Response' :False,'ErrorMessage':str(e)})
 
 # get group list by group status got both group Admin and regular admin
 @api_view(['GET'])
@@ -402,7 +402,7 @@ def Get_Group_ByStatus(request):
             GroupDetail = UserGroup.objects.filter(groupStatus=status,id__in =
                         GroupMember.objects.filter(Mobilenumber = usermobilenumber).values('UserGroup'))
             serializer = StatEndGroupUserSerializer(GroupDetail, many = True)
-            return Response({'data':serializer.data,'IsAdmin':False,'Response' :True},status=200)
+            return Response({'data':serializer.data,'IsAdmin':False,'Response' :True,'Message' :''},status=200)
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :True},status=200)
     except Exception as e:
@@ -421,7 +421,7 @@ def Manage_Group_ByStatus(request):
         if userid is not None:
             GroupDetail = UserGroup.objects.filter(groupStatus=status, createBy = userid)
             serializer = StatEndGroupUserSerializer(GroupDetail, many = True)
-            return Response({'data':serializer.data,'IsAdmin':True,'Response' :True},status=200)
+            return Response({'data':serializer.data,'IsAdmin':True,'Response' :True,'Message' :''},status=200)
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False},status=200)
     except Exception as e:
@@ -438,7 +438,7 @@ def Group_Bidding(request):
             GroupDetail = UserGroup.objects.filter(Q(biddingdate__isnull=True) | Q(biddingdate__lte = datetime.datetime.today())  ,
             Q(groupStatus=5) | Q(groupStatus = 15), createBy = userid )
             serializer = StatEndGroupUserSerializer(GroupDetail, many = True)
-            return Response({'data':serializer.data,'Response' :True},status=200)
+            return Response({'data':serializer.data,'Response' :True,'Message' :''},status=200)
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False},status=200)
     except Exception as e:
@@ -665,7 +665,7 @@ def Group_Payment_User_list(request):
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding = groupbiddingdetails['id'],Status =5,
                 Mobilenumber  = int(mobilenumber.username) )
                 serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)
-            return Response({'data':serializer.data,'Response' :True},status=200)
+            return Response({'data':serializer.data,'Response' :True,'Message' :''},status=200)
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False})
     except Exception as e:
@@ -853,7 +853,7 @@ def Update_UserDetails(request):
             email = data['email']
             userid = Token.objects.get(key=token).user_id
             User.objects.filter(id=userid).update(first_name = firstname,last_name = lastname,email =email)
-            return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
+            return Response({'Response' :True,'Message':'Profile update successfully'},status=200)
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False})
     except Exception as e:
