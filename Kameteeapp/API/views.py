@@ -86,8 +86,8 @@ def Contact_Details(request):
             contactDetails.update( {'contactNumber' : 8279463818} )
             contactDetails.update( {'whatappNumber' : 9412289096} )
             contactDetails.update( {'address' : 'C 603 Amrapali Empire Crossing rebublic'} )
-            contactDetails.update( {'Longitude' : ''} )
-            contactDetails.update( {'Latitude' : ''} )
+            contactDetails.update( {'Longitude' : '28.6343° N'} )
+            contactDetails.update( {'Latitude' : '77.4455° E'} )
  
             return Response({'contactDetails':contactDetails,'Response' : True,'Message' :''},status=200)
         else:
@@ -827,88 +827,51 @@ def Group_AmountReceived_History(request):
 
 import base64
 
-@api_view(['PUT','GET'])
-def Get_update_user_details(request):
+@api_view(['PUT'])
+def Update_UserDetails(request):
     data = request.data
-    try:
-        if request.method == 'GET':
-            token = request.GET.get('token')
-            userid = Token.objects.get(key=token).user_id 
-            Userdata = User.objects.get(id = userid)
+    try:      
+        token = data['token']
+        userid = Token.objects.get(key=token).user_id
+        if userid is not None:
+            AlternateMobileNumber = data['AlternateMobileNumber']
+            ProfilePhoto = data['ProfilePic']                     
+            format, imgstr = ProfilePhoto.split(';base64,')  # format ~= data:image/X,            
+            ext = format.split('/')[-1]  # guess file extension
+            imageuploaded = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)            
+            DateofBirth = data['DateofBirth']   
+            userid = Token.objects.get(key=token).user_id
+            user = User.objects.get(id=userid)
+            #UserDetails.objects.filter(User_id=userid).update(ProfilePic=ProfilePhoto,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
+            UserDetails.objects.filter(User_id=userid).delete()
+            UserDetailphoto =  UserDetails(User=user,ProfilePic=imageuploaded,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
+            UserDetailphoto.save()
             UserDetailsupdate = UserDetails.objects.get(User_id=userid)
             serializer = UserDetailsSerializer(UserDetailsupdate)
+            firstname = data['first_name']
+            lastname = data['last_name']
+            email = data['email']
+            userid = Token.objects.get(key=token).user_id
+            User.objects.filter(id=userid).update(first_name = firstname,last_name = lastname,email =email)
             return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
         else:
-            token = data['token']
-            userid = Token.objects.get(key=token).user_id
-            if userid is not None:
-                AlternateMobileNumber = data['AlternateMobileNumber']
-                ProfilePhoto = data['ProfilePic']                     
-                format, imgstr = ProfilePhoto.split(';base64,')  # format ~= data:image/X,            
-                ext = format.split('/')[-1]  # guess file extension
-                imageuploaded = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)            
-                DateofBirth = data['DateofBirth']   
-                userid = Token.objects.get(key=token).user_id
-                user = User.objects.get(id=userid)
-                #UserDetails.objects.filter(User_id=userid).update(ProfilePic=ProfilePhoto,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
-                UserDetails.objects.filter(User_id=userid).delete()
-                UserDetailphoto =  UserDetails(User=user,ProfilePic=imageuploaded,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
-                UserDetailphoto.save()
-                UserDetailsupdate = UserDetails.objects.get(User_id=userid)
-                serializer = UserDetailsSerializer(UserDetailsupdate)
-                return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
-            else:
-                return Response({'Message' : 'Token Not found in our system','Response' :False})
+            return Response({'Message' : 'Token Not found in our system','Response' :False})
     except Exception as e:
         return Response({'Response' :False,'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
 
-# # user group data crud
-# class UserProfile(generics.GenericAPIView,
-#                     mixins.ListModelMixin):
-
-#     authentication_classes = [TokenAuthentication, SessionAuthentication, BasicAuthentication]
-#     permission_classes = [IsAuthenticated]
-#     serializer_class = ProfileSerializer
-#     queryset = User.objects.all()
-#     #queryset = User.objects.select_related('UserDetails').get(id=5)
-#     lookup_field = 'id'    
-
-#     def get_queryset(self):
-#         return self.queryset.filter(username=self.request.user)
-
-#     def get(self, request, id=None):
-#         if id:
-#             return self.retrieve(request, id)
-#         else:
-#             return self.list(request)
-
-
-@api_view(['GET','PUT'])
-def Get_UserProfile(request):
+@api_view(['GET'])
+def Get_UserDetails(request):
     data = request.data
-    try:              
-        
-            if request.method == 'PUT':
-                token = data['token']
-                #token = data['Password']
-                firstname = data['first_name']
-                lastname = data['last_name']
-                email = data['email']
-                userid = Token.objects.get(key=token).user_id
-                # userdata =  User.objects.get(id=userid) 
-                # userdata.set_password(Password)
-                # userdata.save()
-                User.objects.filter(id=userid).update(first_name = firstname,last_name = lastname,email =email)
-
-            if request.method == 'GET':
-                token = request.GET.get('token')
-                userid = Token.objects.get(key=token).user_id                
-                
-            Userdata = User.objects.get(id = userid)
-            userprofiledetails = UserDetails.objects.filter(User=Userdata)
-            serializer = ProfileSerializer(Userdata)
-            return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
-        
+    try:        
+        token = request.GET.get('token')
+        userid = Token.objects.get(key=token).user_id          
+        Userdata = User.objects.get(id = userid)
+        userprofiledetails = UserDetails.objects.filter(User=Userdata)
+        serializer = ProfileSerializer(Userdata)
+        UserDetailsupdate = UserDetails.objects.get(User_id=userid)
+        serializerprofile = UserDetailsSerializer(UserDetailsupdate)
+        return Response({'data':serializer.data,'Profiledata':serializerprofile.data,'Response' :True,'Message':''},status=200)
+    
     except Exception as e:
         return Response({'Response' :False,'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
 
@@ -921,8 +884,8 @@ def Get_Terms_Condition(request):
         userid = Token.objects.get(key=token).user_id
         if userid is not None:      
             data={
-            'TermsCondition' :  '',
-            'privacypolicy' : ''
+            'TermsCondition' :  'Hi Duresh',
+            'privacypolicy' : 'Hi Manish'
             }
             return Response({'data':data,'Response' :True,'Message':''},status=200)
         else:
@@ -931,4 +894,27 @@ def Get_Terms_Condition(request):
     except Exception as e:
         return Response({'Response' :False,'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
 
+
+
+
+@api_view(['Put'])
+def ChangePassword(request):    
+    try: 
+        data = request.data
+        token = data['token']
+        oldpassword = data['oldpassword']
+        newpassword = data['newpassword']
+        userid = Token.objects.get(key=token).user_id
+        Userdata = User.objects.get(id = userid)
+        user = authenticate(request, username=Userdata.username, password=oldpassword)
+        if user is not None: 
+            userdata =  User.objects.get(id=userid) 
+            userdata.set_password(newpassword)
+            userdata.save()           
+            return Response({'Response' :True,'Message':'Password Update Successfully'},status=200)
+        else:
+            return Response({'Message' : 'Password Mismatch','Response' :False})
+        
+    except Exception as e:
+        return Response({'Response' :False,'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
 
