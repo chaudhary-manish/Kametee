@@ -48,12 +48,12 @@ urlpatterns =[
      path('Group_Payments',Group_Payments,name='Group_Payments'),
      path('SelectUserlist',Selected_User,name='Selected_User for Amount recived'),
       
-       path('update_user_details',update_user_details,name='update_user_details'),
+       path('Get_update_user_details',Get_update_user_details,name='Get_update_user_details'),
 
         path('Send_Amount',Send_Amount,name='Send_Amount'),
 
-       path('getupdateuser', UserProfile.as_view(), name='getupdateuser'),
-    path('getupdateuser/<int:id>', UserProfile.as_view(), name='getupdateuser'),
+       path('getupdateuser', Get_UserProfile, name='Get_UserProfile'),
+   
 
     path('groupuserchat',group_chat,name='group_chat'),
     path('PaymentsHistory',Group_Payments_History,name='Group_Payments_History'),
@@ -61,6 +61,8 @@ urlpatterns =[
 
      path('Biddinglist_for_user',Group_Bidding_User_list_for_User,name='Group_Bidding_User_list_for_User'),
     path('Group_Payment_User_list_for_user',Group_Payment_User_list_for_user,name='Group_Payment_User_list_for_user'),
+
+    path('Get_Terms_Condition',Get_Terms_Condition,name='Get_Terms_Condition'),
 
     
 ]

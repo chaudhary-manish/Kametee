@@ -230,7 +230,7 @@ def adduser_togroup(request):
             GroupMemberlist = GroupMember.objects.filter(UserGroup_id=data['GroupID'])
             serializer = GroupMemberSerializer(GroupMemberlist,many=True)
             data = Send_message('groupregistration',userMobileno,usergroup.groupname , str(usergroup.AmountPerUser) ,str(usergroup.startDate))
-            return Response({'userlist' : serializer.data,'Response' : True,'Message':'User Add successfully'})
+            return Response({'userlist' : "",'Response' : True,'Message':'User Add successfully'})
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False})
    
@@ -827,52 +827,108 @@ def Group_AmountReceived_History(request):
 
 import base64
 
-@api_view(['PUT'])
-def update_user_details(request):
+@api_view(['PUT','GET'])
+def Get_update_user_details(request):
     data = request.data
     try:
-        token = data['token']
-        userid = Token.objects.get(key=token).user_id
-        if userid is not None:
-            AlternateMobileNumber = data['AlternateMobileNumber']
-            ProfilePhoto = data['ProfilePic']                     
-            format, imgstr = ProfilePhoto.split(';base64,')  # format ~= data:image/X,            
-            ext = format.split('/')[-1]  # guess file extension
-            imageuploaded = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)            
-            DateofBirth = data['DateofBirth']   
-            userid = Token.objects.get(key=token).user_id
-            user = User.objects.get(id=userid)
-            #UserDetails.objects.filter(User_id=userid).update(ProfilePic=ProfilePhoto,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
-            UserDetails.objects.filter(User_id=userid).delete()
-            UserDetailphoto =  UserDetails(User=user,ProfilePic=imageuploaded,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
-            UserDetailphoto.save()
+        if request.method == 'GET':
+            token = request.GET.get('token')
+            userid = Token.objects.get(key=token).user_id 
+            Userdata = User.objects.get(id = userid)
             UserDetailsupdate = UserDetails.objects.get(User_id=userid)
             serializer = UserDetailsSerializer(UserDetailsupdate)
             return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
         else:
-            return Response({'Message' : 'Token Not found in our system','Response' :False})
+            token = data['token']
+            userid = Token.objects.get(key=token).user_id
+            if userid is not None:
+                AlternateMobileNumber = data['AlternateMobileNumber']
+                ProfilePhoto = data['ProfilePic']                     
+                format, imgstr = ProfilePhoto.split(';base64,')  # format ~= data:image/X,            
+                ext = format.split('/')[-1]  # guess file extension
+                imageuploaded = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)            
+                DateofBirth = data['DateofBirth']   
+                userid = Token.objects.get(key=token).user_id
+                user = User.objects.get(id=userid)
+                #UserDetails.objects.filter(User_id=userid).update(ProfilePic=ProfilePhoto,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
+                UserDetails.objects.filter(User_id=userid).delete()
+                UserDetailphoto =  UserDetails(User=user,ProfilePic=imageuploaded,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
+                UserDetailphoto.save()
+                UserDetailsupdate = UserDetails.objects.get(User_id=userid)
+                serializer = UserDetailsSerializer(UserDetailsupdate)
+                return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
+            else:
+                return Response({'Message' : 'Token Not found in our system','Response' :False})
     except Exception as e:
         return Response({'Response' :False,'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
 
-# user group data crud
-class UserProfile(generics.GenericAPIView,
-                    mixins.ListModelMixin):
+# # user group data crud
+# class UserProfile(generics.GenericAPIView,
+#                     mixins.ListModelMixin):
 
-    authentication_classes = [TokenAuthentication, SessionAuthentication, BasicAuthentication]
-    permission_classes = [IsAuthenticated]
-    serializer_class = ProfileSerializer
-    queryset = User.objects.all()
-    #queryset = User.objects.select_related('UserDetails').get(id=5)
-    lookup_field = 'id'    
+#     authentication_classes = [TokenAuthentication, SessionAuthentication, BasicAuthentication]
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = ProfileSerializer
+#     queryset = User.objects.all()
+#     #queryset = User.objects.select_related('UserDetails').get(id=5)
+#     lookup_field = 'id'    
 
-    def get_queryset(self):
-        return self.queryset.filter(username=self.request.user)
+#     def get_queryset(self):
+#         return self.queryset.filter(username=self.request.user)
 
-    def get(self, request, id=None):
-        if id:
-            return self.retrieve(request, id)
+#     def get(self, request, id=None):
+#         if id:
+#             return self.retrieve(request, id)
+#         else:
+#             return self.list(request)
+
+
+@api_view(['GET','PUT'])
+def Get_UserProfile(request):
+    data = request.data
+    try:              
+        
+            if request.method == 'PUT':
+                token = data['token']
+                #token = data['Password']
+                firstname = data['first_name']
+                lastname = data['last_name']
+                email = data['email']
+                userid = Token.objects.get(key=token).user_id
+                # userdata =  User.objects.get(id=userid) 
+                # userdata.set_password(Password)
+                # userdata.save()
+                User.objects.filter(id=userid).update(first_name = firstname,last_name = lastname,email =email)
+
+            if request.method == 'GET':
+                token = request.GET.get('token')
+                userid = Token.objects.get(key=token).user_id                
+                
+            Userdata = User.objects.get(id = userid)
+            userprofiledetails = UserDetails.objects.filter(User=Userdata)
+            serializer = ProfileSerializer(Userdata)
+            return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
+        
+    except Exception as e:
+        return Response({'Response' :False,'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
+
+
+
+@api_view(['Get'])
+def Get_Terms_Condition(request):    
+    try: 
+        token = request.GET.get('token')       
+        userid = Token.objects.get(key=token).user_id
+        if userid is not None:      
+            data={
+            'TermsCondition' :  '',
+            'privacypolicy' : ''
+            }
+            return Response({'data':data,'Response' :True,'Message':''},status=200)
         else:
-            return self.list(request)
-
+            return Response({'Message' : 'Token Not found in our system','Response' :False})
+        
+    except Exception as e:
+        return Response({'Response' :False,'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
 
 

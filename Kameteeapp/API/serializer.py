@@ -192,7 +192,7 @@ class GroupBiddingEntriesSerializer(serializers.ModelSerializer):
 
 
 class UserDetailsSerializer(serializers.ModelSerializer):
-    ProfilePic  = serializers.ImageField(max_length=None,  use_url=True)
+    #ProfilePic  = serializers.ImageField(max_length=None,  use_url=True)
     class Meta:
         model = UserDetails
         fields = ['DateofBirth', 'AlternateMobileNumber', 'ProfilePic']
@@ -203,9 +203,9 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        depth = 1
+        
         fields = ('username', 'first_name',
-                'last_name', 'UserDetails', 'email',
+                'last_name', 'email',
                 'is_staff', 'is_active', 'date_joined',
                 'is_superuser')
 
