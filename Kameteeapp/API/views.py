@@ -844,7 +844,7 @@ def Update_UserDetails(request):
             user = User.objects.get(id=userid)                    
             #UserDetails.objects.filter(User_id=userid).update(ProfilePic=ProfilePhoto,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
             UserDetails.objects.filter(User_id=userid).delete()
-            UserDetailphoto =  UserDetails(User=user,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
+            UserDetailphoto =  UserDetails(User=user,ProfilePic=imageuploaded,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
             UserDetailphoto.save()
             UserDetailsupdate = UserDetails.objects.get(User_id=userid)            
             firstname = data['first_name']
