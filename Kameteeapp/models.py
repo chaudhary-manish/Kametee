@@ -10,7 +10,7 @@ def upload_to(instance, filename):
     now = timezone.now()
     base, extension = os.path.splitext(filename.lower())
     milliseconds = now.microsecond // 1000
-    return f"profile/{instance.pk}/{now:%Y%m%d%H%M%S}{milliseconds}{extension}"
+    return f"profile/{now:%Y%m%d%H%M%S}{milliseconds}{extension}"
 
 class UserDetails(models.Model):   
     id = models.AutoField(primary_key=True)
