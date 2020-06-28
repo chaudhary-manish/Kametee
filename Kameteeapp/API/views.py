@@ -841,8 +841,7 @@ def Update_UserDetails(request):
             imageuploaded = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)            
             DateofBirth = data['DateofBirth']   
             userid = Token.objects.get(key=token).user_id
-            user = User.objects.get(id=userid)
-            return Response(imageuploaded)           
+            user = User.objects.get(id=userid)                    
             #UserDetails.objects.filter(User_id=userid).update(ProfilePic=ProfilePhoto,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
             UserDetails.objects.filter(User_id=userid).delete()
             UserDetailphoto =  UserDetails(User=user,ProfilePic=imageuploaded,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
