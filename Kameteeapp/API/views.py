@@ -842,13 +842,13 @@ def Update_UserDetails(request):
             DateofBirth = data['DateofBirth']   
             userid = Token.objects.get(key=token).user_id
             user = User.objects.get(id=userid)
-            return Response('hi mamish')
+           
             #UserDetails.objects.filter(User_id=userid).update(ProfilePic=ProfilePhoto,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
             UserDetails.objects.filter(User_id=userid).delete()
             UserDetailphoto =  UserDetails(User=user,ProfilePic=imageuploaded,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
             UserDetailphoto.save()
             UserDetailsupdate = UserDetails.objects.get(User_id=userid)
-            serializer = UserDetailsSerializer(UserDetailsupdate)
+            return Response('hi manish')
             firstname = data['first_name']
             lastname = data['last_name']
             email = data['email']
