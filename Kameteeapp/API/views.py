@@ -531,8 +531,8 @@ def Group_Bidding_User_list(request):
         id = request.GET.get('GroupID')
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
-            UserGroupDetails = UserGroup.objects.filter(id=id,createBy=userid)
-            UserGroup_id = UserGroup.objects.get(id=id,createBy=userid)
+            UserGroupDetails = UserGroup.objects.filter(id=id)
+            UserGroup_id = UserGroup.objects.get(id=id)
             Groupbiddingdetails = GroupBidding.objects.filter(UserGroup = UserGroup_id,IsSelected =0).aggregate(id=Max('pk'))
             
             #userid = Token.objects.get(key=token).user_id
@@ -842,6 +842,7 @@ def Update_UserDetails(request):
             DateofBirth = data['DateofBirth']   
             userid = Token.objects.get(key=token).user_id
             user = User.objects.get(id=userid)
+            return Response('hi mamish')
             #UserDetails.objects.filter(User_id=userid).update(ProfilePic=ProfilePhoto,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
             UserDetails.objects.filter(User_id=userid).delete()
             UserDetailphoto =  UserDetails(User=user,ProfilePic=imageuploaded,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
