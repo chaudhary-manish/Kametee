@@ -561,13 +561,12 @@ def Save_Group_Bidding(request):
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             Usermobilenumber = User.objects.get(id=userid).username
-            biddingAmount = int(data['BiddingAmount'])
+            biddingAmount = (float(data['BiddingAmount']))
             UserMobileNumber = data['MobileNumber']
-            id = data['GroupBiddingEntriesID']
+            id = data['GroupBiddingEntriesID']            
             minloss = GroupBiddingEntries.objects.get(id=id,SelectedMobileNumber = UserMobileNumber).MinCyclelossAmount
-            if int(minloss) >= biddingAmount:
+            if float(minloss) >= biddingAmount:
                 return Response({'Message' : 'Loss not less than' ,'value':minloss})  
-            
             GroupBiddingEntries.objects.filter(id=id,SelectedMobileNumber = UserMobileNumber).update(BidlossAmount=biddingAmount,AddedBy =Usermobilenumber)
             GroupBiddingEntriesdetails = GroupBiddingEntries.objects.filter(id=id,SelectedMobileNumber = UserMobileNumber)
             serializer = GroupBiddingEntriesSerializer(GroupBiddingEntriesdetails, many = True)
