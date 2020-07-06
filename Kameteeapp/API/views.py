@@ -882,7 +882,40 @@ def Get_Terms_Condition(request):
         userid = Token.objects.get(key=token).user_id
         if userid is not None:      
             data={
-            'TermsCondition' :  'Hi Duresh',
+            'TermsCondition' : """This Privacy Policy explains and governs how Kametee Pvt. Ltd. (hereinafter "Company", "we", "our" or  "us") treats the Personal Information collected, used and disclosed by you on any of your use of our Website or Application (collectively, the "Services") or when you otherwise interact with us, including your Personal Information. "Personal Information" is defined as any information that relates to a natural person, that would be you if you are an individual), which, either directly or indirectly, in combination with other information, is capable of identifying such person. We may change this Privacy Policy from time to time. If we make changes, we will notify you by revising the date at the top of the policy and, in some cases, we may provide you with more prominent notice (such as adding a statement to our homepage or sending you an email notification).
+                 We encourage you to review the Privacy Policy whenever you access the Services to stay informed about our information practices and the ways you can help protect your privacy.
+                 All the capitalized terms used in the Privacy Policy, if not otherwise defined, will have the same meaning as in our Terms of Use.
+                    1: Nature of Personal Information Collected
+                       We collect some Personal Information when you register with us, such as your name, address, phone number, email address, birth date, gender, pin code, occupation, industry and personal preferences and interests relevant to us. Once you register with us and sign in to our Services, we automatically receive and record information on our server logs from your browser, including your IP address, cookie information, and the page you request.
+                       All the capitalized terms used in the Privacy Policy, if not otherwise defined, will have the same meaning as in our Terms of Use.
+
+                    2: Use of Personal Information
+                       We shall not sell your Personal Information. The information you provide to us or we collect is used for the customization of Services or content to your requirement, providing the Services, communicate with you, conduct research and improve our Services, [and provide anonymous, aggregated reporting for internal and external clients].
+
+                    3: Confidentiality and Security
+                       We provide the Services through secure servers and all data collected in course of your use of the Services is stored and controlled on servers located in Hyderabad, India and USA. We have stringent security measures in place to protect the loss, misuse, and alteration of the information under our control. Once your information is in our possession we adhere to strict security guidelines, protecting it against unauthorized access.
+                       We limit access to Personal Information about you to employees, affiliates and/or persons who we believe reasonably need that information to provide services to you or in order to operate and improve the Services.
+
+                    4: Accessing, Changing and Protecting Your Information
+                       You can access and edit your account information at any time. While you are our Member, we will send you certain communications relating to the service, such as service announcements, administrative messages and a newsletter. These communications are considered as part of your account, and you can opt out of receiving them by updating your account settings or only opt-out of receiving them by deleting your account with us. You can delete your account by contacting us or visiting your account page.
+
+                    5: Disclosure of Your Personal Information
+                       We may be required to disclose information collected by us, including your Personal Information, to comply with our legal obligations or requests from law enforcement agencies, to resolve any disputes that we may have with any of our users, and enforce our agreements with third parties, or to carry out any other purpose for which the information was collected. We may also share aggregated or de-identified information, which cannot reasonably be used to identify you. The Service may offer social sharing features and other integrated tools (such as the Facebook "Like" button), which let you share actions you take on the Service with other media, and vice versa. The use of such features enables the sharing of information with your friends or the public, depending on the settings you establish with the entity that provides the social sharing feature. For more information about the purpose and scope of data collection and processing in connection with social sharing features, please visit the privacy policies of the entities that provide those features. We may also share our users' information with any successor in interest if the Company is acquired by or merged with another company, or sells a significant portion of its assets, or all of its assets, to any third party.
+
+                    6: Consent
+                       By using the Services by providing your information, you consent to the collection and use of the information you disclose on the Website in accordance with this Privacy Policy, including but not limited to your consent for sharing your information as per this privacy policy. If we decide to change our
+                       privacy policy, we will post those changes on this page so that you are always aware of what information we collect, how we use it, and under what circumstances we disclose it.
+
+                    7: Grievance Officer
+                        In accordance with Information Technology Act 2000 and rules made there under, the name and contact details of the Grievance Officer are provided below:
+
+                       Manish Chaudhary
+
+                    Kametee Pvt. Ltd.
+                    Phone: +91 8279463818
+                    Email: chaudhary94rc@gmail.com
+                    C-603, Amarapali Empire, Crossing Republic, Ghaziabad            
+            """,
             'privacypolicy' : 'Hi Manish'
             }
             return Response({'data':data,'Response' :True,'Message':''},status=200)

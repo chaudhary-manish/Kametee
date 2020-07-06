@@ -95,9 +95,13 @@ class AddGroupUserSerializer(serializers.Serializer):
         elif total == Totalcount:
             msg = "Group Member count filled" 
             raise ValueError(msg)
+            
+        elif GroupMember.objects.filter(UserGroup=GroupID,UserName=UserName).exists():
+            msg = "Name and Mobile Number both should be unique."
+            raise ValueError(msg)
 
         elif GroupMember.objects.filter(UserGroup=GroupID,Mobilenumber=Mobilenumber).exists():
-            msg = "User alredy added in this group."
+            msg = "Name and Mobile Number both should be unique."
             raise ValueError(msg)
         elif GroupID and Mobilenumber:
             Group =  UserGroup.objects.get(id=GroupID)
