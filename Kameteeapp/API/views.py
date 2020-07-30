@@ -64,12 +64,13 @@ def OTP_Generate(request):
     data=request.data
     MobileNo = data['MobileNumber']
     random = randint(1001, 9999)
-    usercheck  =  User.objects.filter(username = MobileNo)    
-    if usercheck.count() > 0:
+    usercheck  =  User.objects.filter(username = int(MobileNo))  
+     
+    if usercheck.count() < 1:
         data = Send_message('OTPVerification',MobileNo,random)    
         return Response({"radomno": random,'Response' : True,'Message':''}, status=200)
     else:
-        return Response({"radomno": random,'Response' : False,'Message' : 'You No already exist in our system'}, status=200)
+        return Response({"radomno": '','Response' : False,'Message' : 'You No already exist in our system'}, status=200)
 
 # send OTP to confirm user recive that amount
 @api_view(['GET'])
