@@ -67,6 +67,7 @@ def OTP_Generate(request):
     usercheck  =  User.objects.filter(username = int(MobileNo))  
      
     if usercheck.count() < 1:
+        
         data = Send_message('OTPVerification',MobileNo,random)    
         return Response({"radomno": random,'Response' : True,'Message':''}, status=200)
     else:
@@ -141,11 +142,13 @@ def login_user(request):
         token, created = Token.objects.get_or_create(user=user)
         userid = Token.objects.get(key=token.key).user_id
         Userdata = User.objects.get(id = userid)
-        userprofiledetails = UserDetails.objects.filter(User=Userdata)
+        userprofiledetails = ProfilePic.objects.filter(User=Userdata)[0]
         serializer = ProfileSerializer(Userdata)
         UserDetailsupdate = UserDetails.objects.get(User_id=userid)
-        serializerprofile = UserDetailsSerializer(UserDetailsupdate)
-        return Response({"token": token.key,'username':serializer.data['username'],'first_name':serializer.data['first_name'],'last_name':serializer.data['last_name'],'Profilepic':serializerprofile.data['ProfilePic'],'loginstatus':True,'Response' : True,'Message' :''}, status=200)
+        serializerprofile = ProfilePicSerializer(userprofiledetails)
+
+        return Response({"token": token.key,'username':serializer.data['username'],'first_name':serializer.data['first_name'],'last_name':serializer.data['last_name'],
+        'Profilepic':serializerprofile.data['ProfilePic'],'loginstatus':True,'Response' : True,'Message' :''}, status=200)
     except ValueError as ve:
         return Response({'Message' : str(ve),'loginstatus':False,'Response' : False})
     except Exception as e:
@@ -844,18 +847,22 @@ def Update_Profile(request):
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             ProfilePhoto = data['ProfilePic']
-            
-            if len(ProfilePhoto) > 100:  
+            user = User.objects.get(id=userid)  
+
+            if len(ProfilePhoto) > 100: 
+                random = randint(1001, 9999) 
                 user = User.objects.get(id=userid)               
                 format, imgstr = ProfilePhoto.split(';base64,')  # format ~= data:image/X,                       
                 ext = format.split('/')[-1]  # guess file extension
-                imageuploaded = ContentFile(base64.b64decode(imgstr), name='temp.' + ext) 
-                getuserdetail  = UserDetails.objects.get(User_id=userid)                
-                UserDetails.objects.filter(User_id=userid).delete()                  
-                UserDetailphoto =  UserDetails(User=user,ProfilePic=imageuploaded,AlternateMobileNumber=getuserdetail.AlternateMobileNumber,DateofBirth=getuserdetail.DateofBirth)
+                dynamicname = str(user.username) + str(random)               
+                ProfilePic.objects.filter(User=user).delete()
+                imageuploaded = ContentFile(base64.b64decode(imgstr), name= dynamicname + '.' + ext)                                
+                UserDetailphoto =  ProfilePic(User=user,ProfilePic=imageuploaded)
                 UserDetailphoto.save()
             else:
-                UserDetails.objects.filter(User_id=userid).update(ProfilePic='')
+                ProfilePic.objects.filter(User=user).delete()                                               
+                UserDetailphoto =  ProfilePic(User=user,ProfilePic='')
+                UserDetailphoto.save()
 
             return Response({'Response' :True,'Message':'Profile pic update successfully'},status=200)
         else:
@@ -873,17 +880,17 @@ def Update_UserDetails(request):
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             AlternateMobileNumber = data['AlternateMobileNumber']
-            ProfilePhoto = data['ProfilePic']                     
-            format, imgstr = ProfilePhoto.split(';base64,')  # format ~= data:image/X,            
-            ext = format.split('/')[-1]  # guess file extension
-            imageuploaded = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)            
+            # ProfilePhoto = data['ProfilePic']                     
+            # format, imgstr = ProfilePhoto.split(';base64,')  # format ~= data:image/X,            
+            # ext = format.split('/')[-1]  # guess file extension
+            # imageuploaded = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)            
             DateofBirth = data['DateofBirth']   
             userid = Token.objects.get(key=token).user_id
             user = User.objects.get(id=userid)                    
-            # UserDetails.objects.filter(User_id=userid).update(AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
-            UserDetails.objects.filter(User_id=userid).delete()
-            UserDetailphoto =  UserDetails(User=user,ProfilePic=imageuploaded,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
-            UserDetailphoto.save()
+            UserDetails.objects.filter(User_id=userid).update(AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
+            # UserDetails.objects.filter(User_id=userid).delete()
+            # UserDetailphoto =  UserDetails(User=user,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
+            # UserDetailphoto.save()
             UserDetailsupdate = UserDetails.objects.get(User_id=userid)            
             firstname = data['first_name']
             lastname = data['last_name']

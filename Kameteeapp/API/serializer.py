@@ -199,7 +199,13 @@ class UserDetailsSerializer(serializers.ModelSerializer):
     #ProfilePic  = serializers.ImageField(max_length=None,  use_url=True)
     class Meta:
         model = UserDetails
-        fields = ['DateofBirth', 'AlternateMobileNumber', 'ProfilePic']
+        fields = ['DateofBirth', 'AlternateMobileNumber']
+
+class ProfilePicSerializer(serializers.ModelSerializer):
+    #ProfilePic  = serializers.ImageField(max_length=None,  use_url=True)
+    class Meta:
+        model = ProfilePic
+        fields = ['ProfilePic']
 
 
 class ProfileSerializer(serializers.ModelSerializer):

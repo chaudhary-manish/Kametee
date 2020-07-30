@@ -12,12 +12,18 @@ def upload_to(instance, filename):
     milliseconds = now.microsecond // 1000
     return f"profile/{now:%Y%m%d%H%M%S}{milliseconds}{extension}"
 
+class ProfilePic(models.Model):
+    id = models.AutoField(primary_key=True)
+    User= models.ForeignKey(User, on_delete=models.CASCADE,null=True,blank=True)
+    ProfilePic = models.ImageField(upload_to ='profile',null=True,blank=True)
+
+
 class UserDetails(models.Model):   
     id = models.AutoField(primary_key=True)
     User= models.ForeignKey(User, on_delete=models.CASCADE,null=True,blank=True,related_name='UserDetails')
     DateofBirth = models.DateField(max_length=12,null=True, blank=True)
     AlternateMobileNumber=models.BigIntegerField(null=True,default=0 , blank=True)
-    ProfilePic = models.ImageField(upload_to ='profile',null=True,blank=True)
+    
 
 
 class UserGroup(models.Model):   
