@@ -49,6 +49,7 @@ urlpatterns =[
      path('SelectUserlist',Selected_User,name='Selected_User for Amount recived'),
       
        path('UpdateProfile',Update_UserDetails,name='Update_UserDetails'),
+       path('UpdateProfilePic',Update_Profile,name='Update_UserDetails'),
 
         path('Send_Amount',Send_Amount,name='Send_Amount'),
 

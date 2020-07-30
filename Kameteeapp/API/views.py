@@ -48,15 +48,15 @@ def Send_message(SMSTemplate,Phone_number,var1 ='',var2='',var3='',var4='',var5=
         payloads = json.dumps({"From": "KameTi","To": Phone_number,"VAR1": var1, "VAR2": var2 ,"VAR3": var3, "TemplateName": "PaymentRecived"})
     elif SMSTemplate == 'UserRecivedVerification':
         payloads = json.dumps({"From": "KameTi","To": Phone_number,"VAR1": var1, "TemplateName": "UserRecivedVerification"})
-    return True
-    # if payloads is not None:
-    #     header = {"content-type": "application/json"}
-    #     conn.request("POST", "/API/V1/5e31f7cf-8dd5-11ea-9fa5-0200cd936042/ADDON_SERVICES/SEND/TSMS", payloads)
-    #     res = conn.getresponse()
-    #     data = res.read()        
-    #     return data.decode("utf-8")
-    # else:
-    #     return True
+  
+    if payloads is not None:
+        header = {"content-type": "application/json"}
+        conn.request("POST", "/API/V1/5e31f7cf-8dd5-11ea-9fa5-0200cd936042/ADDON_SERVICES/SEND/TSMS", payloads)
+        res = conn.getresponse()
+        data = res.read()        
+        return data.decode("utf-8")
+    else:
+        return True
 
 # OTP generate to send for number verificaiton
 @api_view(['POST'])
@@ -138,7 +138,13 @@ def login_user(request):
         user = serializer.validated_data["user"]
         login(request, user)
         token, created = Token.objects.get_or_create(user=user)
-        return Response({"token": token.key,'loginstatus':True,'Response' : True,'Message' :''}, status=200)
+        userid = Token.objects.get(key=token.key).user_id
+        Userdata = User.objects.get(id = userid)
+        userprofiledetails = UserDetails.objects.filter(User=Userdata)
+        serializer = ProfileSerializer(Userdata)
+        UserDetailsupdate = UserDetails.objects.get(User_id=userid)
+        serializerprofile = UserDetailsSerializer(UserDetailsupdate)
+        return Response({"token": token.key,'username':serializer.data['username'],'first_name':serializer.data['first_name'],'last_name':serializer.data['last_name'],'Profilepic':serializerprofile.data['ProfilePic'],'loginstatus':True,'Response' : True,'Message' :''}, status=200)
     except ValueError as ve:
         return Response({'Message' : str(ve),'loginstatus':False,'Response' : False})
     except Exception as e:
@@ -268,9 +274,9 @@ def groupmember_update(request,id):
             UserName = data['UserName']
             status = UserGroup.objects.get(id__in=GroupMember.objects.filter(id=id).values('UserGroup_id')).groupStatus
             UsergroupID = GroupMember.objects.filter(id=id).values('UserGroup_id')[0]  
-            checkuserexist  = GroupMember.objects.filter(UserGroup_id=UsergroupID['UserGroup_id'],Mobilenumber = Mobilenumber).count()
+            checkuserexist  = GroupMember.objects.filter(UserGroup_id=UsergroupID['UserGroup_id'],Mobilenumber = Mobilenumber).exclude(UserName=UserName).count()
 
-            checkuserexistname  = GroupMember.objects.filter(UserGroup_id=UsergroupID['UserGroup_id'],UserName=UserName).count()
+            checkuserexistname  = GroupMember.objects.filter(UserGroup_id=UsergroupID['UserGroup_id'],UserName=UserName).exclude(Mobilenumber = Mobilenumber).count()
            
             if status == 5:
                 if request.method == 'PUT':
@@ -572,7 +578,7 @@ def Save_Group_Bidding(request):
             GroupBiddingEntries.objects.filter(id=id,SelectedMobileNumber = UserMobileNumber).update(BidlossAmount=biddingAmount,AddedBy =Usermobilenumber)
             GroupBiddingEntriesdetails = GroupBiddingEntries.objects.filter(id=id,SelectedMobileNumber = UserMobileNumber)
             serializer = GroupBiddingEntriesSerializer(GroupBiddingEntriesdetails, many = True)
-            return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
+            return Response({'Response' :True,'Message':'Bidding save successfully'},status=200)
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False})
     except Exception as e:
@@ -829,6 +835,30 @@ def Group_AmountReceived_History(request):
 import base64
 
 @api_view(['PUT'])
+def Update_Profile(request):
+    data = request.data
+    try: 
+        token = data['token']
+        userid = Token.objects.get(key=token).user_id
+        if userid is not None:
+            ProfilePhoto = data['ProfilePic']
+            if len(ProfilePhoto) > 100:
+                format, imgstr = ProfilePhoto.split(';base64,')  # format ~= data:image/X,            
+                ext = format.split('/')[-1]  # guess file extension
+                imageuploaded = ContentFile(base64.b64decode(imgstr), name='temp.' + ext) 
+                UserDetails.objects.filter(User_id=userid).update(ProfilePic=imageuploaded)
+            else:
+                UserDetails.objects.filter(User_id=userid).update(ProfilePic='')
+
+            return Response({'Response' :True,'Message':'Profile pic update successfully'},status=200)
+        else:
+            return Response({'Message' : 'Token Not found in our system','Response' :False})
+    except Exception as e:
+        return Response({'Response' :False,'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
+    
+
+
+@api_view(['PUT'])
 def Update_UserDetails(request):
     data = request.data
     try:      
@@ -836,17 +866,17 @@ def Update_UserDetails(request):
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             AlternateMobileNumber = data['AlternateMobileNumber']
-            ProfilePhoto = data['ProfilePic']                     
-            format, imgstr = ProfilePhoto.split(';base64,')  # format ~= data:image/X,            
-            ext = format.split('/')[-1]  # guess file extension
-            imageuploaded = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)            
+            # ProfilePhoto = data['ProfilePic']                     
+            # format, imgstr = ProfilePhoto.split(';base64,')  # format ~= data:image/X,            
+            # ext = format.split('/')[-1]  # guess file extension
+            # imageuploaded = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)            
             DateofBirth = data['DateofBirth']   
             userid = Token.objects.get(key=token).user_id
             user = User.objects.get(id=userid)                    
-            #UserDetails.objects.filter(User_id=userid).update(ProfilePic=ProfilePhoto,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
-            UserDetails.objects.filter(User_id=userid).delete()
-            UserDetailphoto =  UserDetails(User=user,ProfilePic=imageuploaded,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
-            UserDetailphoto.save()
+            UserDetails.objects.filter(User_id=userid).update(AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
+            #UserDetails.objects.filter(User_id=userid).delete()
+            #UserDetailphoto =  UserDetails(User=user,ProfilePic=imageuploaded,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
+            #UserDetailphoto.save()
             UserDetailsupdate = UserDetails.objects.get(User_id=userid)            
             firstname = data['first_name']
             lastname = data['last_name']
@@ -885,12 +915,12 @@ def Get_Terms_Condition(request):
         if userid is not None:      
             data={
                 
-            'privacypolicy' : """ \n This Privacy Policy explains and governs how Kametee Pvt. Ltd. (hereinafter "Company", "we", "our" or  "us") treats the Personal Information collected, used and disclosed by you on any of your use of our Website or Application (collectively, the "Services") or when you otherwise interact with us, including your Personal Information. "Personal Information" is defined as any information that relates to a natural person, that would be you if you are an individual), which, either directly or indirectly, in combination with other information, is capable of identifying such person. We may change this Privacy Policy from time to time. If we make changes, we will notify you by revising the date at the top of the policy and, in some cases, we may provide you with more prominent notice (such as adding a statement to our homepage or sending you an email notification).
+            'privacypolicy' : """ \nThis Privacy Policy explains and governs how Kametee Pvt. Ltd. (hereinafter "Company", "we", "our" or  "us") treats the Personal Information collected, used and disclosed by you on any of your use of our Website or Application (collectively, the "Services") or when you otherwise interact with us, including your Personal Information. "Personal Information" is defined as any information that relates to a natural person, that would be you if you are an individual), which, either directly or indirectly, in combination with other information, is capable of identifying such person. We may change this Privacy Policy from time to time. If we make changes, we will notify you by revising the date at the top of the policy and, in some cases, we may provide you with more prominent notice (such as adding a statement to our homepage or sending you an email notification).
                  We encourage you to review the Privacy Policy whenever you access the Services to stay informed about our information practices and the ways you can help protect your privacy. \n
-                 All the capitalized terms used in the Privacy Policy, if not otherwise defined, will have the same meaning as in our Terms of Use. \n
+                 All the capitalized terms used in the Privacy Policy, if not otherwise defined, will have the same meaning as in our Terms of Use. 
                     1: Nature of Personal Information Collected
                        We collect some Personal Information when you register with us, such as your name, address, phone number, email address, birth date, gender, pin code, occupation, industry and personal preferences and interests relevant to us. Once you register with us and sign in to our Services, we automatically receive and record information on our server logs from your browser, including your IP address, cookie information, and the page you request.
-                       All the capitalized terms used in the Privacy Policy, if not otherwise defined, will have the same meaning as in our Terms of Use.\n
+                       All the capitalized terms used in the Privacy Policy, if not otherwise defined, will have the same meaning as in our Terms of Use.
 
                     2: Use of Personal Information
                        We shall not sell your Personal Information. The information you provide to us or we collect is used for the customization of Services or content to your requirement, providing the Services, communicate with you, conduct research and improve our Services, [and provide anonymous, aggregated reporting for internal and external clients]. \n
@@ -906,69 +936,36 @@ def Get_Terms_Condition(request):
                        We may be required to disclose information collected by us, including your Personal Information, to comply with our legal obligations or requests from law enforcement agencies, to resolve any disputes that we may have with any of our users, and enforce our agreements with third parties, or to carry out any other purpose for which the information was collected. We may also share aggregated or de-identified information, which cannot reasonably be used to identify you. The Service may offer social sharing features and other integrated tools (such as the Facebook "Like" button), which let you share actions you take on the Service with other media, and vice versa. The use of such features enables the sharing of information with your friends or the public, depending on the settings you establish with the entity that provides the social sharing feature. For more information about the purpose and scope of data collection and processing in connection with social sharing features, please visit the privacy policies of the entities that provide those features. We may also share our users' information with any successor in interest if the Company is acquired by or merged with another company, or sells a significant portion of its assets, or all of its assets, to any third party.\n
 
                     6: Consent
-                       By using the Services by providing your information, you consent to the collection and use of the information you disclose on the Website in accordance with this Privacy Policy, including but not limited to your consent for sharing your information as per this privacy policy. If we decide to change our
-                       privacy policy, we will post those changes on this page so that you are always aware of what information we collect, how we use it, and under what circumstances we disclose it.\n
+                       By using the Services by providing your information, you consent to the collection and use of the information you disclose on the Website in accordance with this Privacy Policy, including but not limited to your consent for sharing your information as per this privacy policy. If we decide to change our privacy policy, we will post those changes on this page so that you are always aware of what information we collect, how we use it, and under what circumstances we disclose it.\n
 
                     7: Grievance Officer
-                        In accordance with Information Technology Act 2000 and rules made there under, the name and contact details of the Grievance Officer are provided below: \n
-
-                       
+                        In accordance with Information Technology Act 2000 and rules made there under, the name and contact details of the Grievance Officer are provided below: \n                       
                     Manish Chaudhary \n
-
                     Kametee Pvt. Ltd.\n
                     Phone: +91 8279463818\n
                     Email: chaudhary94rc@gmail.com \n
                     C-603, Amarapali Empire, \n
                     Crossing Republic, Ghaziabad \n            
             """,
-            'TermsCondition' : """ \n
-                            IMPORTANT - READ THESE TERMS CAREFULLY BEFORE DOWNLOADING, INSTALLING OR USING THIS SOFTWARE. BY DOWNLOADING OR
-                            INSTALLING THIS SOFTWARE, YOU ACKNOWLEDGE THAT YOU HAVE READ THIS LICENSE AGREEMENT, THAT YOU UNDERSTAND IT, AND 
-                            THAT YOU AGREE TO BE BOUND BY ITS TERMS. IF YOU ARE ENTERING INTO THIS AGREEMENT ON BEHALF OF A COMPANY OR OTHER 
-                            LEGAL ENTITY, YOU REPRESENT THAT YOU HAVE THE AUTHORITY TO BIND SUCH ENTITY AND ITS AFFILIATES TO THESE TERMS AND 
-                            CONDITIONS, IN WHICH CASE THE TERMS "YOU" OR "YOUR" SHALL REFER TO ITS AFFILIATES. IF YOU DO NOT HAVE SUCH AUTHORITY,
-                            OR IF YOU DO NOT AGREE WITH THESE TERMS AND CONDITIONS, YOU MUST NOT DOWNLOAD OR INSTALL THIS SOFTWARE. \n
-                            \n
-                            . Grant of Software License for Free Trial Period \n
-                                Subject to the terms and conditions and except as otherwise provided in this License Agreement, Kamitee grants to you
-                                a limited, non­ exclusive, non-transferable and non-assignable license to evaluate Kamitee software, modules, and
-                                feature(s) (the "Software") for Your personal purposes only. As used herein the "Software" is subject to licenses, 
-                                you do not have any rights in or to the Software except as expressly granted in this License Agreement. Kametee 
-                                retains all copyright, trademarks, patent, and other intellectual property rights to the Software. You acknowledge 
-                                that the Software, all copies of the Software, any derivative works, compilations, and collective works of the
-                                Software, and any know-how and trade secrets related to the Software are the sole and exclusive property of 
-                                Kametee Private Limited and contain Kamitee's confidential and proprietary materials \n
-                            . General Limitations \n
-                            Except as otherwise expressly provided under this License Agreement, you shall have no right, and you specifically agree not to: \n
+            'TermsCondition' : """\nIMPORTANT - READ THESE TERMS CAREFULLY BEFORE DOWNLOADING, INSTALLING OR USING THIS SOFTWARE. BY DOWNLOADING OR INSTALLING THIS SOFTWARE, YOU ACKNOWLEDGE THAT YOU HAVE READ THIS LICENSE AGREEMENT, THAT YOU UNDERSTAND IT, AND THAT YOU AGREE TO BE BOUND BY ITS TERMS. IF YOU ARE ENTERING INTO THIS AGREEMENT ON BEHALF OF A COMPANY OR OTHER LEGAL ENTITY, YOU REPRESENT THAT YOU HAVE THE AUTHORITY TO BIND SUCH ENTITY AND ITS AFFILIATES TO THESE TERMS AND CONDITIONS, IN WHICH CASE THE TERMS "YOU" OR "YOUR" SHALL REFER TO ITS AFFILIATES. IF YOU DO NOT HAVE SUCH AUTHORITY,OR IF YOU DO NOT AGREE WITH THESE TERMS AND CONDITIONS, YOU MUST NOT DOWNLOAD OR INSTALL THIS SOFTWARE.\n
+                            . Grant of Software License for Free Trial Period\n
+                                Subject to the terms and conditions and except as otherwise provided in this License Agreement, Kamitee grants to you a limited, non­ exclusive, non-transferable and non-assignable license to evaluate Kamitee software, modules, and feature(s) (the "Software") for Your personal purposes only. As used herein the "Software" is subject to licenses,you do not have any rights in or to the Software except as expressly granted in this License Agreement. Kametee retains all copyright, trademarks, patent, and other intellectual property rights to the Software. You acknowledge that the Software, all copies of the Software, any derivative works, compilations, and collective works of the Software, and any know-how and trade secrets related to the Software are the sole and exclusive property of Kametee Private Limited and contain Kamitee's confidential and proprietary materials \n
+                            . General Limitations\nExcept as otherwise expressly provided under this License Agreement, you shall have no right, and you specifically agree not to: \n
 
-                               a: Utilize the Software beyond the applicable Term; \n
+                               a: Utilize the Software beyond the applicable Term;\n
                                b: Transfer, assign or sublicense Your license rights to any other person, and any such attempted transfer, assignment or sublicense shall be void; \n
                                c: Provide, divulge, disclose, or make available to, or permit the use of the Software by any third party; \n
                                d: Sell, resell, license, sublicense, distribute, rent or lease the Software or include the Software in a service bureau or outsourcing offering; \n
-                               e: Make error corrections to or otherwise modify or adapt the Software or create derivative works based upon the Software, or to permit third parties
-                                  to do the same; \n
+                               e: Make error corrections to or otherwise modify or adapt the Software or create derivative works based upon the Software, or to permit third parties  to do the same; \n
                                f: Decompile, decrypt, reverse engineer, disassemble or otherwise reduce the Software to human-readable form, or to permit third parties to do the same; \n
-                               g: Circumvent or disable any features or technological protection measures in the Software; \n
+                               g: Circumvent or disable any features or technological protection measures in the Software;\n
 
-                            . Limited Warranty & Limitation of Liability \n
-                                THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND. ALL EXPRESS, IMPLIED OR STATUTORY CONDITIONS,REPRESENTATIONS, AND WARRANTIES INCLUDING,
-                                WITHOUT LIMITATION, ANY IMPLIED WARRANTY OR CONDITION OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON­ INFRINGEMENT, SATISFACTORY QUALITY
-                                OR ARISING FROM A COURSE OF DEALING, LAW, USAGE, OR TRADE PRACTICE, ARE HEREBY EXCLUDED TO THE MAXIMUM EXTENT ALLOWED BY APPLICABLE LAW. NEITHER 
-                                KAMITEE NOR ITS LICENSORS SHALL BE LIABLE FOR YOUR ACTION, OR FAILURE TO ACT, IN RELIANCE ON ANY INFORMATION FURNISHED AS PART OF THE SOFTWARE. 
-                                YOU ARE SOLELY RESPONSIBLE FOR MAINTAINING THE SECURITY OF YOUR NETWORK AND COMPUTER SYSTEMS. NEITHER KAMITEE NOR ITS LICENSORS REPRESENT, WARRANT, OR GUARANTEE THAT
-                                (A) SECURITY THREATS, MALICIOUS CODE AND/OR VULNERABILITIES WILL BE IDENTIFIED, OR (B) THE CONTENT WILL RENDER YOUR NETWORK AND SYSTEMS SAFE FROM MALICIOUS 
-                                CODE, VULNERABILITIES, INTRUSIONS, OR OTHER SECURITY BREACHES, (C) EVERY VULNERABILITY ON EVERY TESTED SYSTEM OR APPLICATION WILL BE DISCOVERED, OR (D) THERE WILL BE NO FALSE POSITIVES.
-                                IN NO EVENT WILL KAMITEE OR ITS LICENSORS BE LIABLE TO YOU OR YOUR EMPLOYEES, OR ANY THIRD PARTY, FOR ANY LOST REVENUE, PROFIT, OR DATA, BUSINESS INTERRUPTION, 
-                                OR FOR SPECIAL, INDIRECT, CONSEQUENTIAL, INCIDENTAL, OR PUNITIVE DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY ARISING OUT OF THE USE OF OR
-                                INABILITY TO USE THE SOFTWARE EVEN IF KAMITEE HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.IN NO EVENT SHALL KAMITEE BE LIABLE TO YOU, WHETHER IN CONTRACT,
-                                WARRANTY OR TORT (INCLUDING NEGLIGENCE OR STRICT LIABILITY),OR OTHERWISE EXCEED THE FEE PAID BY YOU.\n
+                            . Limited Warranty & Limitation of Liability\n THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND. ALL EXPRESS, IMPLIED OR STATUTORY CONDITIONS,REPRESENTATIONS, AND WARRANTIES INCLUDING,WITHOUT LIMITATION, ANY IMPLIED WARRANTY OR CONDITION OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON­ INFRINGEMENT, SATISFACTORY QUALITY OR ARISING FROM A COURSE OF DEALING, LAW, USAGE, OR TRADE PRACTICE, ARE HEREBY EXCLUDED TO THE MAXIMUM EXTENT ALLOWED BY APPLICABLE LAW. NEITHER KAMITEE NOR ITS LICENSORS SHALL BE LIABLE FOR YOUR ACTION, OR FAILURE TO ACT, IN RELIANCE ON ANY INFORMATION FURNISHED AS PART OF THE SOFTWARE. 
+                                YOU ARE SOLELY RESPONSIBLE FOR MAINTAINING THE SECURITY OF YOUR NETWORK AND COMPUTER SYSTEMS. NEITHER KAMITEE NOR ITS LICENSORS REPRESENT, WARRANT, OR GUARANTEE THAT (A) SECURITY THREATS, MALICIOUS CODE AND/OR VULNERABILITIES WILL BE IDENTIFIED, OR (B) THE CONTENT WILL RENDER YOUR NETWORK AND SYSTEMS SAFE FROM MALICIOUS CODE, VULNERABILITIES, INTRUSIONS, OR OTHER SECURITY BREACHES, (C) EVERY VULNERABILITY ON EVERY TESTED SYSTEM OR APPLICATION WILL BE DISCOVERED, OR (D) THERE WILL BE NO FALSE POSITIVES.
+                                IN NO EVENT WILL KAMITEE OR ITS LICENSORS BE LIABLE TO YOU OR YOUR EMPLOYEES, OR ANY THIRD PARTY, FOR ANY LOST REVENUE, PROFIT, OR DATA, BUSINESS INTERRUPTION, OR FOR SPECIAL, INDIRECT, CONSEQUENTIAL, INCIDENTAL, OR PUNITIVE DAMAGES, HOWEVER CAUSED AND REGARDLESS OF THE THEORY OF LIABILITY ARISING OUT OF THE USE OF OR INABILITY TO USE THE SOFTWARE EVEN IF KAMITEE HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.IN NO EVENT SHALL KAMITEE BE LIABLE TO YOU, WHETHER IN CONTRACT, WARRANTY OR TORT (INCLUDING NEGLIGENCE OR STRICT LIABILITY),OR OTHERWISE EXCEED THE FEE PAID BY YOU.\n
 
                             . Term and Termination \n
-                                This License Agreement is effective until terminated or the end of the Term. You may terminate this License Agreement at any time (i) by destroying all 
-                                copies of Software, related documentation, analysis data and report and purging same from memory devices (required at the end of a Term). Your rights 
-                                under this License Agreement will terminate immediately without notice from Kamitee if you fail to comply with any provision of this Agreement. Upon 
-                                any termination, you must destroy all copies of Software and related documentation and purge same from memory devices. All provisions of this License 
-                                Agreement relating to disclaimers of warranties, limitation of liabilities, remedies, damages protection of information and shall survive termination. \n
+                                This License Agreement is effective until terminated or the end of the Term. You may terminate this License Agreement at any time (i) by destroying all copies of Software, related documentation, analysis data and report and purging same from memory devices (required at the end of a Term). Your rights under this License Agreement will terminate immediately without notice from Kamitee if you fail to comply with any provision of this Agreement. Upon any termination, you must destroy all copies of Software and related documentation and purge same from memory devices. All provisions of this License Agreement relating to disclaimers of warranties, limitation of liabilities, remedies, damages protection of information and shall survive termination. \n
 
                               """
             }
