@@ -842,11 +842,17 @@ def Update_Profile(request):
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             ProfilePhoto = data['ProfilePic']
-            if len(ProfilePhoto) > 100:
-                format, imgstr = ProfilePhoto.split(';base64,')  # format ~= data:image/X,            
+            
+            if len(ProfilePhoto) > 100:  
+                user = User.objects.get(id=userid)               
+                format, imgstr = ProfilePhoto.split(';base64,')  # format ~= data:image/X,                       
                 ext = format.split('/')[-1]  # guess file extension
                 imageuploaded = ContentFile(base64.b64decode(imgstr), name='temp.' + ext) 
-                UserDetails.objects.filter(User_id=userid).update(ProfilePic=imageuploaded)
+                getuserdetail  = UserDetails.objects.get(User_id=userid)
+                
+                UserDetails.objects.filter(User_id=userid).delete()                  
+                UserDetailphoto =  UserDetails(User=user,ProfilePic=imageuploaded,AlternateMobileNumber=getuserdetail.AlternateMobileNumber,DateofBirth=getuserdetail.DateofBirth)
+                UserDetailphoto.save()
             else:
                 UserDetails.objects.filter(User_id=userid).update(ProfilePic='')
 
@@ -866,17 +872,17 @@ def Update_UserDetails(request):
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             AlternateMobileNumber = data['AlternateMobileNumber']
-            # ProfilePhoto = data['ProfilePic']                     
-            # format, imgstr = ProfilePhoto.split(';base64,')  # format ~= data:image/X,            
-            # ext = format.split('/')[-1]  # guess file extension
-            # imageuploaded = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)            
+            ProfilePhoto = data['ProfilePic']                     
+            format, imgstr = ProfilePhoto.split(';base64,')  # format ~= data:image/X,            
+            ext = format.split('/')[-1]  # guess file extension
+            imageuploaded = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)            
             DateofBirth = data['DateofBirth']   
             userid = Token.objects.get(key=token).user_id
             user = User.objects.get(id=userid)                    
-            UserDetails.objects.filter(User_id=userid).update(AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
-            #UserDetails.objects.filter(User_id=userid).delete()
-            #UserDetailphoto =  UserDetails(User=user,ProfilePic=imageuploaded,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
-            #UserDetailphoto.save()
+            # UserDetails.objects.filter(User_id=userid).update(AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
+            UserDetails.objects.filter(User_id=userid).delete()
+            UserDetailphoto =  UserDetails(User=user,ProfilePic=imageuploaded,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
+            UserDetailphoto.save()
             UserDetailsupdate = UserDetails.objects.get(User_id=userid)            
             firstname = data['first_name']
             lastname = data['last_name']
