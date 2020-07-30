@@ -20,8 +20,8 @@ urlpatterns =[
     path('usergroup/<int:id>', GroupUser.as_view(), name='usergroup'),
     
     path('adduser_togroup',adduser_togroup,name='adduser_togroup'),
-    path('groupmember_list/<int:id>',groupmember_list,name='groupmember_list'),
-    path('groupmember_update/<int:id>',groupmember_update,name='groupmember_update'),
+    path('groupmember_list',groupmember_list,name='groupmember_list'),
+    path('groupmember_update',groupmember_update,name='groupmember_update'),
 
     
     #path('StartGroupBidding/', StartGroupBidding.as_view(), name='StartGroupBidding'),
