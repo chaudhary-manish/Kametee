@@ -247,10 +247,10 @@ def adduser_togroup(request):
 
 #get User list of Group BY ID
 @api_view(['get'])
-def groupmember_list(request,id):
-    
+def groupmember_list(request):    
     try:
         token = request.GET.get('token')
+        id =  int(request.GET.get('GroupID'))        
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             GroupMemberlist = GroupMember.objects.filter(UserGroup_id=id)
@@ -264,10 +264,11 @@ def groupmember_list(request,id):
 
 #update gruop member list when group is in open state ie: 5
 @api_view(['PUT','DELETE'])
-def groupmember_update(request,id):
+def groupmember_update(request):
     data=request.data
     try:
         token = data['token']
+        id  = data['GroupMemberID']
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             Mobilenumber = data['MobileNumber']
@@ -848,8 +849,7 @@ def Update_Profile(request):
                 format, imgstr = ProfilePhoto.split(';base64,')  # format ~= data:image/X,                       
                 ext = format.split('/')[-1]  # guess file extension
                 imageuploaded = ContentFile(base64.b64decode(imgstr), name='temp.' + ext) 
-                getuserdetail  = UserDetails.objects.get(User_id=userid)
-                
+                getuserdetail  = UserDetails.objects.get(User_id=userid)                
                 UserDetails.objects.filter(User_id=userid).delete()                  
                 UserDetailphoto =  UserDetails(User=user,ProfilePic=imageuploaded,AlternateMobileNumber=getuserdetail.AlternateMobileNumber,DateofBirth=getuserdetail.DateofBirth)
                 UserDetailphoto.save()
