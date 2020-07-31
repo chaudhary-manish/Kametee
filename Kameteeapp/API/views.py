@@ -149,13 +149,12 @@ def login_user(request):
         token, created = Token.objects.get_or_create(user=user)
         userid = Token.objects.get(key=token.key).user_id
         Userdata = User.objects.get(id = userid)
-        userprofiledetails = ProfilePic.objects.get(User=Userdata)
         serializer = ProfileSerializer(Userdata)
-        UserDetailsupdate = UserDetails.objects.get(User_id=userid)
+        UserDetailsupdate = UserDetails.objects.get(User_id=userid)      
+        userprofiledetails = ProfilePic.objects.get(User=Userdata)
         serializerprofile = ProfilePicSerializer(userprofiledetails)
-
         return Response({"token": token.key,'username':serializer.data['username'],'first_name':serializer.data['first_name'],'last_name':serializer.data['last_name'],
-        'Profilepic':serializerprofile.data['ProfilePic'],'loginstatus':True,'Response' : True,'Message' :''}, status=200)
+        'pic_url':serializerprofile.data['ProfilePic'],'loginstatus':True,'Response' : True,'Message' :''}, status=200)
     except ValueError as ve:
         return Response({'Message' : str(ve),'loginstatus':False,'Response' : False})
     except Exception as e:
@@ -870,8 +869,12 @@ def Update_Profile(request):
                 ProfilePic.objects.filter(User=user).delete()                                               
                 UserDetailphoto =  ProfilePic(User=user,ProfilePic='')
                 UserDetailphoto.save()
+            
+            Userdata = User.objects.get(id = userid)
+            userprofiledetails = ProfilePic.objects.get(User=Userdata)
+            serializerprofile = ProfilePicSerializer(userprofiledetails)
 
-            return Response({'Response' :True,'Message':'Profile pic update successfully'},status=200)
+            return Response({'Response' :True,'pic_url':serializerprofile.data['ProfilePic'],'Message':'Profile pic update successfully'},status=200)
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False})
     except Exception as e:
