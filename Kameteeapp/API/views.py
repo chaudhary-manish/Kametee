@@ -692,9 +692,9 @@ def Group_Payment_User_list_for_user(request):
             Mobilenumber  = int(mobilenumber.username) )
             serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)
             if len(serializer.data) < 1:               
-                return Response({'data':serializer.data[0],'IsAdmin':True,'Response' :False,'Message' :'Payment history not found'},status=200)
+                return Response({'data':serializer.data,'IsAdmin':True,'Response' :False,'Message' :'Payment history not found'},status=200)
             else:
-               return Response({'data':serializer.data[0],'Response' :True,'Message':''},status=200)
+               return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
             
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False},status=200)
