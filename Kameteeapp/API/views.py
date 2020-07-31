@@ -830,7 +830,7 @@ def Group_AmountReceived_History(request):
         if userid is not None:
             Usermobilenumber = User.objects.get(id=userid).username
             admincheck  = UserGroup.objects.filter(id=id,createBy =userid).count()
-            UserGroupDetails=  UserGroup.objects.get(id=id,createBy=userid)
+            UserGroupDetails=  UserGroup.objects.get(id=id)
             # if admincheck == 0:
             #     GroupAmountRecivedHistorydetails = AmountRecived.objects.filter(UserGroup = UserGroupDetails,Recivermobile =Usermobilenumber)
             # else:
