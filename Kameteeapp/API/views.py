@@ -64,10 +64,8 @@ def OTP_Generate(request):
     data=request.data
     MobileNo = data['MobileNumber']
     random = randint(1001, 9999)
-    usercheck  =  User.objects.filter(username = int(MobileNo))  
-     
-    if usercheck.count() < 1:
-        
+    usercheck  =  User.objects.filter(username = int(MobileNo))       
+    if usercheck.count() < 1:        
         data = Send_message('OTPVerification',MobileNo,random)    
         return Response({"radomno": random,'Response' : True,'Message':''}, status=200)
     else:
@@ -142,7 +140,7 @@ def login_user(request):
         token, created = Token.objects.get_or_create(user=user)
         userid = Token.objects.get(key=token.key).user_id
         Userdata = User.objects.get(id = userid)
-        userprofiledetails = ProfilePic.objects.filter(User=Userdata)[0]
+        userprofiledetails = ProfilePic.objects.get(User=Userdata)
         serializer = ProfileSerializer(Userdata)
         UserDetailsupdate = UserDetails.objects.get(User_id=userid)
         serializerprofile = ProfilePicSerializer(userprofiledetails)

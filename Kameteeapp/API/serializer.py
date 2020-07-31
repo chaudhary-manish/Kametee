@@ -34,6 +34,8 @@ class RegisterSerializer(serializers.Serializer):
             user.save()
             userdeatil = UserDetails(User=user)
             userdeatil.save()
+            UserDetailphoto =  ProfilePic(User=user,ProfilePic='')
+            UserDetailphoto.save()
             data['user']=user           
         else:
             msg = "Must provide username and password FirstName and LastName both."
