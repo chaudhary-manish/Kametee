@@ -63,13 +63,22 @@ def Send_message(SMSTemplate,Phone_number,var1 ='',var2='',var3='',var4='',var5=
 def OTP_Generate(request):
     data=request.data
     MobileNo = data['MobileNumber']
+    condition = data['Purpose']
     random = randint(1001, 9999)
-    usercheck  =  User.objects.filter(username = int(MobileNo))       
-    if usercheck.count() < 1:        
-        data = Send_message('OTPVerification',MobileNo,random)    
-        return Response({"radomno": random,'Response' : True,'Message':''}, status=200)
+    if condition == 'forgetpassword':
+        usercheck  =  User.objects.filter(username = int(MobileNo))       
+        if usercheck.count() > 0:        
+            data = Send_message('OTPVerification',MobileNo,random)    
+            return Response({"radomno": random,'Response' : True,'Message':''}, status=200)
+        else:
+            return Response({"radomno": '','Response' : False,'Message' : 'Mobile number not found in our system'}, status=200)
     else:
-        return Response({"radomno": '','Response' : False,'Message' : 'You No already exist in our system'}, status=200)
+        usercheck  =  User.objects.filter(username = int(MobileNo))       
+        if usercheck.count() < 1:        
+            data = Send_message('OTPVerification',MobileNo,random)    
+            return Response({"radomno": random,'Response' : True,'Message':''}, status=200)
+        else:
+            return Response({"radomno": '','Response' : False,'Message' : 'You No already exist in our system'}, status=200)
 
 # send OTP to confirm user recive that amount
 @api_view(['GET'])
@@ -877,18 +886,11 @@ def Update_UserDetails(request):
         token = data['token']
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
-            AlternateMobileNumber = data['AlternateMobileNumber']
-            # ProfilePhoto = data['ProfilePic']                     
-            # format, imgstr = ProfilePhoto.split(';base64,')  # format ~= data:image/X,            
-            # ext = format.split('/')[-1]  # guess file extension
-            # imageuploaded = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)            
+            AlternateMobileNumber = data['AlternateMobileNumber']                  
             DateofBirth = data['DateofBirth']   
             userid = Token.objects.get(key=token).user_id
             user = User.objects.get(id=userid)                    
             UserDetails.objects.filter(User_id=userid).update(AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
-            # UserDetails.objects.filter(User_id=userid).delete()
-            # UserDetailphoto =  UserDetails(User=user,AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
-            # UserDetailphoto.save()
             UserDetailsupdate = UserDetails.objects.get(User_id=userid)            
             firstname = data['first_name']
             lastname = data['last_name']
