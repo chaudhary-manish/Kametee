@@ -789,14 +789,15 @@ def Selected_User(request):
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             Usermobilenumber = User.objects.get(id=userid).username
-            usergroupdetails=  UserGroup.objects.get(id=id,createBy=userid)
-            selecteduser = GroupBidding.objects.filter(Cyclenumber=usergroupdetails.biddgingCycle,
-                            UserGroup=usergroupdetails,IsSelected = 1)
-            serializer = GroupBiddingSerializer(selecteduser)
-            if len(serializer.data) < 1: 
-                return Response({'data':serializer.data,'Response' :False,'Message' :'Bidding is not selected yet'},status=200)
+            usergroupdetails=  UserGroup.objects.get(id=id,createBy=userid)           
+            
+            if usergroupdetails.biddingflag == 0:                 
+                return Response({'data':'','Response' :False,'Message' :'Bidding is not selected yet'},status=200)
             else:
-                return Response({'data':serializer.data[0],'Response' :True,'Message':''},status=200)
+                selecteduser = GroupBidding.objects.filter(Cyclenumber=usergroupdetails.biddgingCycle,
+                            UserGroup=usergroupdetails,IsSelected = 1)[0]            
+                serializer = GroupBiddingSerializer(selecteduser)
+                return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
            
 
             # return Response({"data":selecteduser.SelectedMobileNumber},status=200)
