@@ -71,14 +71,14 @@ def OTP_Generate(request):
             data = Send_message('OTPVerification',MobileNo,random)    
             return Response({"radomno": random,'Response' : True,'Message':''}, status=200)
         else:
-            return Response({"radomno": '','Response' : False,'Message' : 'Mobile number not found in our system'}, status=200)
+            return Response({"radomno": '','Response' : False,'Message' : 'Number not found in our system'}, status=200)
     else:
         usercheck  =  User.objects.filter(username = int(MobileNo))       
         if usercheck.count() < 1:        
             data = Send_message('OTPVerification',MobileNo,random)    
             return Response({"radomno": random,'Response' : True,'Message':''}, status=200)
         else:
-            return Response({"radomno": '','Response' : False,'Message' : 'You No already exist in our system'}, status=200)
+            return Response({"radomno": '','Response' : False,'Message' : 'Your number already registred '}, status=200)
 
 # send OTP to confirm user recive that amount
 @api_view(['GET'])
@@ -232,8 +232,7 @@ class GroupUser(generics.GenericAPIView,
 #Add Member to Group
 @api_view(['POST'])
 def adduser_togroup(request):
-    data=request.data
-    
+    data=request.data    
     try:
         token = data['token']
         userMobileno = data['MobileNumber']
@@ -419,9 +418,13 @@ def Get_Group_ByStatus(request):
         if userid is not None:
             usermobilenumber = User.objects.get(id=userid).username            
             GroupDetail = UserGroup.objects.filter(groupStatus=status,id__in =
-                        GroupMember.objects.filter(Mobilenumber = usermobilenumber).values('UserGroup'))
+                          GroupMember.objects.filter(Mobilenumber = usermobilenumber).values('UserGroup'))
             serializer = StatEndGroupUserSerializer(GroupDetail, many = True)
-            return Response({'data':serializer.data,'IsAdmin':False,'Response' :True,'Message' :''},status=200)
+            
+            if len(serializer.data) < 1:               
+                return Response({'data':serializer.data,'IsAdmin':False,'Response' :False,'Message' :'Your are not register with any active group'},status=200)
+            else:
+                return Response({'data':serializer.data,'IsAdmin':False,'Response' :True,'Message' :''},status=200)
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :True},status=200)
     except Exception as e:
@@ -440,7 +443,11 @@ def Manage_Group_ByStatus(request):
         if userid is not None:
             GroupDetail = UserGroup.objects.filter(groupStatus=status, createBy = userid)
             serializer = StatEndGroupUserSerializer(GroupDetail, many = True)
-            return Response({'data':serializer.data,'IsAdmin':True,'Response' :True,'Message' :''},status=200)
+            
+            if len(serializer.data) < 1:               
+                return Response({'data':serializer.data,'IsAdmin':True,'Response' :False,'Message' :'Your are not admin to any group'},status=200)
+            else:
+                return Response({'data':serializer.data,'IsAdmin':True,'Response' :True,'Message' :''},status=200)
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False},status=200)
     except Exception as e:
