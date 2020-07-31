@@ -621,7 +621,7 @@ def Save_Group_Bidding(request):
             id = data['GroupBiddingEntriesID']            
             minloss = GroupBiddingEntries.objects.get(id=id,SelectedMobileNumber = UserMobileNumber).MinCyclelossAmount
             if float(minloss) >= biddingAmount:
-                return Response({'Message' : 'Loss not less than ' + str(minloss) ,'Response' :True})  
+                return Response({'Message' : 'Loss not less than ' + str(minloss) ,'Response' :False})  
             GroupBiddingEntries.objects.filter(id=id,SelectedMobileNumber = UserMobileNumber).update(BidlossAmount=biddingAmount,AddedBy =Usermobilenumber)
             GroupBiddingEntriesdetails = GroupBiddingEntries.objects.filter(id=id,SelectedMobileNumber = UserMobileNumber)
             serializer = GroupBiddingEntriesSerializer(GroupBiddingEntriesdetails, many = True)
