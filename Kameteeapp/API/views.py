@@ -264,7 +264,7 @@ def groupmember_list(request):
         if userid is not None:
             GroupMemberlist = GroupMember.objects.filter(UserGroup_id=id)
             serializer = GroupMemberSerializer(GroupMemberlist,many=True)
-            return Response({'Memberlist':serializer.data,'Response' :True})
+            return Response({'data':serializer.data,'Response' :True})
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False})
     except Exception as e:
@@ -306,6 +306,26 @@ def groupmember_update(request):
         return Response({'Response' :False,'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
 
 
+@api_view(['GET'])
+def Get_Group_forChat(request):  
+    try:
+        token = request.GET.get('token')        
+        userid = Token.objects.get(key=token).user_id
+        if userid is not None:
+            usermobilenumber = User.objects.get(id=userid).username            
+            GroupDetail = UserGroup.objects.filter(groupStatus__in =(10,15),id__in =
+                          GroupMember.objects.filter(Mobilenumber = usermobilenumber).values('UserGroup'))
+            serializer = StatEndGroupUserSerializer(GroupDetail, many = True)
+            
+            if len(serializer.data) < 1:               
+                return Response({'data':serializer.data,'Response' :False,'Message' :'Your are not register with any  group'},status=200)
+            else:
+                return Response({'data':serializer.data,'Response' :True,'Message' :''},status=200)
+        else:
+            return Response({'Message' : 'Token Not found in our system','Response' :True},status=200)
+    except Exception as e:
+        return Response({'Response' :False,'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
+
 #Group message with all member of group
 @api_view(['Post','Get'])
 def group_chat(request):
@@ -334,9 +354,6 @@ def group_chat(request):
         
     except Exception as e:
         return Response({'Response' :False,'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
-
-
-
 
 
 # to start group group of first time insert bidding date concept 
@@ -407,8 +424,7 @@ def Group_Terminate(request,id = None):
 
 # get group list by group status got both group Admin and regular admin
 @api_view(['GET'])
-def Get_Group_ByStatus(request):
-  
+def Get_Group_ByStatus(request):  
     try:
         token = request.GET.get('token')
         status = int(request.GET.get('status'))       
@@ -419,10 +435,15 @@ def Get_Group_ByStatus(request):
             usermobilenumber = User.objects.get(id=userid).username            
             GroupDetail = UserGroup.objects.filter(groupStatus=status,id__in =
                           GroupMember.objects.filter(Mobilenumber = usermobilenumber).values('UserGroup'))
-            serializer = StatEndGroupUserSerializer(GroupDetail, many = True)
-            
+            serializer = StatEndGroupUserSerializer(GroupDetail, many = True)            
+            if status == 10:
+                statusname = 'Active'
+            elif status == 15:
+                statusname = 'Running'
+            else:
+                statusname = 'Finished'        
             if len(serializer.data) < 1:               
-                return Response({'data':serializer.data,'IsAdmin':False,'Response' :False,'Message' :'Your are not register with any active group'},status=200)
+                return Response({'data':serializer.data,'IsAdmin':False,'Response' :False,'Message' :'Your are not register with ' + str(statusname) + ' group'},status=200)
             else:
                 return Response({'data':serializer.data,'IsAdmin':False,'Response' :True,'Message' :''},status=200)
         else:
@@ -542,7 +563,11 @@ def Group_Bidding_User_list_for_User(request):
             Groupbiddingdetails = GroupBidding.objects.filter(UserGroup = UserGroupDetails,IsSelected =0).aggregate(id=Max('pk'))
             GroupBiddingEntriesdetails = GroupBiddingEntries.objects.filter(GroupBidding =Groupbiddingdetails["id"],IsSelected =0,SelectedMobileNumber =usermobile.username)
             serializer = GroupBiddingEntriesSerializer(GroupBiddingEntriesdetails, many = True)
-            return Response({'data':serializer.data[0],'Response' :True,'Message':''},status=200)
+            if len(serializer.data) < 1:               
+                return Response({'data':serializer.data,'IsAdmin':True,'Response' :False,'Message' :'Bidding is submit or group is not running'},status=200)
+            else:
+               return Response({'data':serializer.data[0],'Response' :True,'Message':''},status=200)
+            
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False})
     except Exception as e:
@@ -571,7 +596,11 @@ def Group_Bidding_User_list(request):
             #     SelectedMobileNumber  = int(mobilenumber.username) )
 
             serializer = GroupBiddingEntriesSerializer(GroupBiddingEntriesdetails, many = True)
-            return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
+            if len(serializer.data) < 1:               
+                return Response({'data':serializer.data,'IsAdmin':True,'Response' :False,'Message' :'Bidding is submit or group is not running'},status=200)
+            else:
+               return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
+         
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False})
     except Exception as e:
@@ -662,7 +691,11 @@ def Group_Payment_User_list_for_user(request):
             GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding = groupbiddingdetails['id'],Status =5,
             Mobilenumber  = int(mobilenumber.username) )
             serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)
-            return Response({'data':serializer.data[0],'Response' :True,'Message':''},status=200)
+            if len(serializer.data) < 1:               
+                return Response({'data':serializer.data[0],'IsAdmin':True,'Response' :False,'Message' :'Payment history not found'},status=200)
+            else:
+               return Response({'data':serializer.data[0],'Response' :True,'Message':''},status=200)
+            
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False},status=200)
     except Exception as e:
@@ -690,7 +723,11 @@ def Group_Payment_User_list(request):
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding = groupbiddingdetails['id'],Status =5,
                 Mobilenumber  = int(mobilenumber.username) )
                 serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)
-            return Response({'data':serializer.data,'Response' :True,'Message' :''},status=200)
+                if len(serializer.data) < 1: 
+                    return Response({'data':serializer.data,'IsAdmin':True,'Response' :False,'Message' :'Payment history not found'},status=200)
+                else:
+                    return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
+            
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False})
     except Exception as e:
@@ -730,7 +767,11 @@ def Group_Payments(request):
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding = groupbiddingdetails['id'],Status =5,
                 Mobilenumber  = int(mobilenumber.username) )
                 serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)
-            return Response({'data':serializer.data,'Message':'Payments done Successfully','Response' :True},status=200)
+            if len(serializer.data) < 1: 
+                return Response({'data':serializer.data,'Response' :False,'Message' :'Group Payments list not found'},status=200)
+            else:
+                return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
+           
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False})
     except Exception as e:
@@ -752,13 +793,17 @@ def Selected_User(request):
             selecteduser = GroupBidding.objects.filter(Cyclenumber=usergroupdetails.biddgingCycle,
                             UserGroup=usergroupdetails,IsSelected = 1)[0]
             serializer = GroupBiddingSerializer(selecteduser)
-            return Response({'data':serializer.data,'Message':'','Response' :True},status=200)
+            if len(serializer.data) < 1: 
+                return Response({'data':serializer.data,'Response' :False,'Message' :'Bidding is not selected yet'},status=200)
+            else:
+                return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
+           
 
-            return Response({"data":selecteduser.SelectedMobileNumber},status=200)
-            GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(id=id,Mobilenumber = UserMobileNumber)[0]
-            totalAmountDue = int(GroupPaymentHistorydetails.ActualAmount) - int(PaidAmount)
-            GroupPaymentHistory.objects.filter(GroupBidding_id=id,Mobilenumber = UserMobileNumber).update(AmountPaid=PaidAmount,AmountDue=totalAmountDue)
-            return Response({'Message' :"Payemts successfully",'Response' :True},status=200)
+            # return Response({"data":selecteduser.SelectedMobileNumber},status=200)
+            # GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(id=id,Mobilenumber = UserMobileNumber)[0]
+            # totalAmountDue = int(GroupPaymentHistorydetails.ActualAmount) - int(PaidAmount)
+            # GroupPaymentHistory.objects.filter(GroupBidding_id=id,Mobilenumber = UserMobileNumber).update(AmountPaid=PaidAmount,AmountDue=totalAmountDue)
+            # return Response({'Message' :"Payemts successfully",'Response' :True},status=200)
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :True})
     except Exception as e:
@@ -821,7 +866,11 @@ def Group_Payments_History(request):
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(UserGroup = UserGroupDetails)          
         
             serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails,many=True)
-            return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
+            if len(serializer.data) < 1: 
+                return Response({'data':serializer.data,'Response' :False,'Message' :'Payments history not found'},status=200)
+            else:
+                return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
+           
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False})
     except Exception as e:
@@ -844,7 +893,11 @@ def Group_AmountReceived_History(request):
             #     GroupAmountRecivedHistorydetails = AmountRecived.objects.filter(Mobilenumber =Usermobilenumber)          
             GroupAmountRecivedHistorydetails = AmountRecived.objects.filter(UserGroup = UserGroupDetails)
             serializer = GroupAmountRecivedSerializer(GroupAmountRecivedHistorydetails,many=True)
-            return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
+            if len(serializer.data) < 1: 
+                return Response({'data':serializer.data,'Response' :False,'Message' :'Amount recived history not found'},status=200)
+            else:
+                return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
+           
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False})
     except Exception as e:

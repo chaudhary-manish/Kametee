@@ -55,7 +55,7 @@ urlpatterns =[
 
        path('Get_UserDetails', Get_UserDetails, name='Get_UserDetails'),
    
-
+    path('Get_Group_forChat',Get_Group_forChat,name='group_chat'),
     path('groupuserchat',group_chat,name='group_chat'),
     path('PaymentsHistory',Group_Payments_History,name='Group_Payments_History'),
     path('AmountReceivedHistory',Group_AmountReceived_History,name='Group_AmountReceived_History'),
