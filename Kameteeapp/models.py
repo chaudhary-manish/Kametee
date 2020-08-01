@@ -39,6 +39,7 @@ class UserGroup(models.Model):
     groupStatus = models.IntegerField(default=5) 
     biddingdate = models.DateField(max_length=12,null=True)
     biddingflag = models.IntegerField(default=0)
+    IsSelectedflag = models.IntegerField(default=0)
     biddgingCycle = models.IntegerField(null=True,default=1)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)

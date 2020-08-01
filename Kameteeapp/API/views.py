@@ -648,6 +648,7 @@ def Select_Group_Bidding(request):
             
             GroupBiddingDetails  = GroupBidding.objects.get(id=GroupBiddingEntriesdetails.GroupBidding_id)
             GroupUserDetails   =   UserGroup.objects.get(id=GroupBiddingDetails.UserGroup_id) 
+            
             #cal Amount paid by per user
             AmountPaidbyPerUser =int ((GroupBiddingEntriesdetails.TotalAmount - GroupBiddingEntriesdetails.BidlossAmount)/GroupUserDetails.usercount)
             totalbiddingamount = int(AmountPaidbyPerUser * GroupUserDetails.usercount)
@@ -664,6 +665,7 @@ def Select_Group_Bidding(request):
                     #Send_message('SelectedbiddingAlert',GroupMemberlist.Mobilenumber,GroupUserDetails.groupname ,str(totalamount),str(AmountPaidbyPerUser), str(fromdate) )
                 GroupBiddingEntries.objects.filter(id=id,SelectedMobileNumber = UserMobileNumber).update(IsSelected=1)    
                 GroupBidding.objects.filter(id=GroupBiddingEntriesdetails.GroupBidding_id).update(selectedName=SelectedUserName,SelectedMobileNumber = UserMobileNumber,IsSelected=1,biddingAmount = totalbiddingamount)
+                UserGroup.objects.get(id=GroupBiddingDetails.UserGroup_id).update(IsSelectedflag =1)
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding=GroupBiddingDetails)
                 serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)
                 return Response({'data':serializer.data,'Message':'user selected successfully','Response' :True},status=200)
@@ -789,9 +791,9 @@ def Selected_User(request):
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             Usermobilenumber = User.objects.get(id=userid).username
-            usergroupdetails=  UserGroup.objects.get(id=id,createBy=userid)           
+            usergroupdetails=  UserGroup.objects.get(id=id,createBy=userid)          
             
-            if usergroupdetails.biddingflag == 0:                 
+            if usergroupdetails.IsSelectedflag == 0:                 
                 return Response({'data':'','Response' :False,'Message' :'Bidding is not selected yet'},status=200)
             else:
                 selecteduser = GroupBidding.objects.filter(Cyclenumber=usergroupdetails.biddgingCycle,
@@ -837,10 +839,10 @@ def Send_Amount(request):
                 GroupBidding.objects.filter(UserGroup = UserGroupDetails,Cyclenumber=biddingcycle).update(BiddingStatus=20)
                 if biddingcycle == CheckgroupAdmin.usercount:
                     # 20 means group close all cycle complete 
-                    UserGroup.objects.filter(id=id,createBy=userid).update(groupStatus = 20)
+                    UserGroup.objects.filter(id=id,createBy=userid).update(groupStatus = 20,IsSelectedflag =0)
                     GroupBidding.objects.filter(UserGroup = UserGroupDetails,Cyclenumber=biddingcycle).update(BiddingStatus=20)
                 else:
-                    UserGroup.objects.filter(id=id,createBy=userid).update(groupStatus = 10,biddingdate = CheckgroupAdmin.biddingdate + datetime.timedelta(30),biddgingCycle =biddingcycle+1)
+                    UserGroup.objects.filter(id=id,createBy=userid).update(groupStatus = 10,biddingdate = CheckgroupAdmin.biddingdate + datetime.timedelta(30),biddgingCycle =biddingcycle+1,IsSelectedflag= 0)
                 return Response({'Message' :"Payemts successfully",'Response' :True},status=200)
             else:
                 return Response({'Message' :"You dont have permission to send amount",'Response' :True})
