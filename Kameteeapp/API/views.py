@@ -723,10 +723,10 @@ def Group_Payment_User_list(request):
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding = groupbiddingdetails['id'],Status =5,
                 Mobilenumber  = int(mobilenumber.username) )
                 serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)
-                if len(serializer.data) < 1: 
-                    return Response({'data':serializer.data,'IsAdmin':True,'Response' :False,'Message' :'Payment history not found'},status=200)
-                else:
-                    return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
+            if len(serializer.data) < 1: 
+                return Response({'data':serializer.data,'IsAdmin':True,'Response' :False,'Message' :'Payment history not found'},status=200)
+            else:
+                return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
             
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False})
