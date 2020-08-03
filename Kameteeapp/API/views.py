@@ -764,7 +764,7 @@ def Group_Payments(request):
                 Send_message('PaymentRecived',UserMobileNumber,PaidAmount , str(groupcreatemobile.username),str(groupcreatemobile.username))
 
             if GroupPaymentHistorydetails.Status == 5:
-                totalAmountDue = int(GroupPaymentHistorydetails.ActualAmount) - int(PaidAmount)
+                totalAmountDue = int(float(GroupPaymentHistorydetails.ActualAmount)) - int(float(PaidAmount))
                 GroupPaymentHistory.objects.filter(id=id,GroupBidding_id=groupbiddingdetails['id'],Mobilenumber = UserMobileNumber).update(AmountPaid=PaidAmount,AmountDue=totalAmountDue,
                                                 IsReceived = recivedflag )            
             
