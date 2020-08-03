@@ -90,11 +90,11 @@ def Contact_Details(request):
         contactDetails = {}
         #return Response(userid)
         if userid is not None:
-            contactDetails.update( {'facebooklink' : 'facebooklink'} )
-            contactDetails.update( {'twitterlink' : 'twitterlink'} )
-            contactDetails.update( {'youtubelink' : 'youtubelink'} )
-            contactDetails.update( {'linkedlienlink' : 'linkedlienlink'} )
-            contactDetails.update( {'instagramlink' : 'instagramlink'} )
+            contactDetails.update( {'facebooklink' : 'https://www.facebook.com/'} )
+            contactDetails.update( {'twitterlink' : 'https://twitter.com/?lang=en'} )
+            contactDetails.update( {'youtubelink' : 'https://www.youtube.com/'} )
+            contactDetails.update( {'linkedlienlink' : 'https://www.linkedin.com/'} )
+            contactDetails.update( {'instagramlink' : 'https://www.instagram.com/?hl=en'} )
             contactDetails.update( {'enquiryemail' : 'chaudhary94rc@gmail.com'} )
             contactDetails.update( {'techsupportemail' : 'chaudhary94rc@gmail.com'} )
             contactDetails.update( {'contactNumber' : 8279463818} )
@@ -376,7 +376,7 @@ def Group_Start(request):
                 UserGroup.objects.filter(id=id,createBy = userid ).update(usercount=groupmembercount,groupStatus=10,biddgingCycle=1,biddingdate = datetime.datetime.today())
                 Groupdetail = UserGroup.objects.get(id=id,createBy = userid )
                 serializer = StatEndGroupUserSerializer(Groupdetail)
-                return Response({'data':serializer.data,'Response' :True,'Message':'Group start successgully'})   
+                return Response({'data':serializer.data,'Response' :True,'Message':'Group start successfully'})   
             else:
                 return Response({'Message' :" User Group Already Start",'Response' :True},status=200) 
         else:
