@@ -755,7 +755,7 @@ def Group_Payments(request):
             usergrupdetail  = UserGroup.objects.get(id=GroupPaymentHistorydetails.UserGroup_id)
             groupbiddingdetails = GroupBidding.objects.filter(UserGroup = usergrupdetail,Cyclenumber=int(usergrupdetail.biddgingCycle)).aggregate(id=Max('pk'))
             
-            groupcreatemobile = User.objects.get(id = usergrupdetail.createBy)
+            groupcreatemobile = User.objects.get(username = usergrupdetail.createBy)
             loginusermobie = User.objects.get(id = userid)    
             recivedflag = 0
             
@@ -767,6 +767,8 @@ def Group_Payments(request):
                 totalAmountDue = int(GroupPaymentHistorydetails.ActualAmount) - int(PaidAmount)
                 GroupPaymentHistory.objects.filter(id=id,GroupBidding_id=groupbiddingdetails['id'],Mobilenumber = UserMobileNumber).update(AmountPaid=PaidAmount,AmountDue=totalAmountDue,
                                                 IsReceived = recivedflag )
+            
+            
             if recivedflag == 1:
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding_id = groupbiddingdetails['id'],Status =5)
                 serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)       
@@ -775,6 +777,7 @@ def Group_Payments(request):
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding = groupbiddingdetails['id'],Status =5,
                 Mobilenumber  = int(mobilenumber.username) )
                 serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)
+            
             if len(serializer.data) < 1: 
                 return Response({'data':serializer.data,'Response' :False,'Message' :'Group Payments list not found'},status=200)
             else:
