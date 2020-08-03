@@ -670,10 +670,10 @@ def Select_Group_Bidding(request):
                     #Send_message('SelectedbiddingAlert',GroupMemberlist.Mobilenumber,GroupUserDetails.groupname ,str(totalamount),str(AmountPaidbyPerUser), str(fromdate) )
                 GroupBiddingEntries.objects.filter(id=id,SelectedMobileNumber = UserMobileNumber).update(IsSelected=1)    
                 GroupBidding.objects.filter(id=GroupBiddingEntriesdetails.GroupBidding_id).update(selectedName=SelectedUserName,SelectedMobileNumber = UserMobileNumber,IsSelected=1,biddingAmount = totalbiddingamount)
-                UserGroup.objects.get(id=GroupBiddingDetails.UserGroup_id).update(IsSelectedflag =1)
+                UserGroup.objects.filter(id=GroupBiddingDetails.UserGroup_id).update(IsSelectedflag =1)
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding=GroupBiddingDetails)
                 serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)
-                return Response({'data':serializer.data,'Message':'user selected successfully','Response' :True},status=200)
+                return Response({'data':'','Message':'user selected successfully','Response' :True},status=200)
             else:
                 return Response({'Message':"User Already Selected for this cycle",'Response' :True})
         else:
