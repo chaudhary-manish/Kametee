@@ -376,7 +376,7 @@ def Group_Start(request):
                 UserGroup.objects.filter(id=id,createBy = userid ).update(usercount=groupmembercount,groupStatus=10,biddgingCycle=1,biddingdate = datetime.datetime.today())
                 Groupdetail = UserGroup.objects.get(id=id,createBy = userid )
                 serializer = StatEndGroupUserSerializer(Groupdetail)
-                return Response({'data':serializer.data,'Response' :True,'Message':''})   
+                return Response({'data':serializer.data,'Response' :True,'Message':'Group start successgully'})   
             else:
                 return Response({'Message' :" User Group Already Start",'Response' :True},status=200) 
         else:
