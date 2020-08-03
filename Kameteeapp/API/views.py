@@ -90,6 +90,11 @@ def Contact_Details(request):
         contactDetails = {}
         #return Response(userid)
         if userid is not None:
+            contactDetails.update( {'facebooklink' : 'facebooklink'} )
+            contactDetails.update( {'twitterlink' : 'twitterlink'} )
+            contactDetails.update( {'youtubelink' : 'youtubelink'} )
+            contactDetails.update( {'linkedlienlink' : 'linkedlienlink'} )
+            contactDetails.update( {'instagramlink' : 'instagramlink'} )
             contactDetails.update( {'enquiryemail' : 'chaudhary94rc@gmail.com'} )
             contactDetails.update( {'techsupportemail' : 'chaudhary94rc@gmail.com'} )
             contactDetails.update( {'contactNumber' : 8279463818} )
@@ -242,7 +247,7 @@ def adduser_togroup(request):
             serializer = AddGroupUserSerializer(data=data,context={'user_id':userid})
             serializer.is_valid(raise_exception=True)
             usergroup =  UserGroup.objects.get(id=data['GroupID'])
-            GroupMemberlist = GroupMember.objects.filter(UserGroup_id=data['GroupID'])
+            GroupMemberlist = GroupMember.objects.filter(UserGroup_id=data['GroupID']).order_by('-isAdmin')
             serializer = GroupMemberSerializer(GroupMemberlist,many=True)
             data = Send_message('groupregistration',userMobileno,usergroup.groupname , str(usergroup.AmountPerUser) ,str(usergroup.startDate))
             return Response({'userlist' : "",'Response' : True,'Message':'User Add successfully'})
@@ -262,7 +267,7 @@ def groupmember_list(request):
         id =  int(request.GET.get('GroupID'))        
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
-            GroupMemberlist = GroupMember.objects.filter(UserGroup_id=id)
+            GroupMemberlist = GroupMember.objects.filter(UserGroup_id=id).order_by('-isAdmin')
             serializer = GroupMemberSerializer(GroupMemberlist,many=True)
             return Response({'data':serializer.data,'Response' :True})
         else:
@@ -434,7 +439,7 @@ def Get_Group_ByStatus(request):
         if userid is not None:
             usermobilenumber = User.objects.get(id=userid).username            
             GroupDetail = UserGroup.objects.filter(groupStatus=status,id__in =
-                          GroupMember.objects.filter(Mobilenumber = usermobilenumber).values('UserGroup'))
+                          GroupMember.objects.filter(Mobilenumber = usermobilenumber).values('UserGroup')).order_by('biddingdate')
             serializer = StatEndGroupUserSerializer(GroupDetail, many = True)            
             if status == 10:
                 statusname = 'Active'
@@ -462,7 +467,7 @@ def Manage_Group_ByStatus(request):
             status = 10
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
-            GroupDetail = UserGroup.objects.filter(groupStatus=status, createBy = userid)
+            GroupDetail = UserGroup.objects.filter(groupStatus=status, createBy = userid).order_by('biddingdate')
             serializer = StatEndGroupUserSerializer(GroupDetail, many = True)
             
             if len(serializer.data) < 1:               
@@ -791,8 +796,8 @@ def Selected_User(request):
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             Usermobilenumber = User.objects.get(id=userid).username
-            usergroupdetails=  UserGroup.objects.get(id=id,createBy=userid)          
-            
+            usergroupdetails=  UserGroup.objects.get(id=id,createBy=userid)    
+           
             if usergroupdetails.IsSelectedflag == 0:                 
                 return Response({'data':'','Response' :False,'Message' :'Bidding is not selected yet'},status=200)
             else:

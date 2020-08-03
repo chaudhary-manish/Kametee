@@ -144,6 +144,7 @@ class GroupMemberSerializer(serializers.ModelSerializer):
             "UserGroup",
             "Mobilenumber",
             "UserName",
+            "isAdmin"
         ]
 
 class GroupBiddingSerializer(serializers.ModelSerializer):
