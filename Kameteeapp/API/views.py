@@ -490,7 +490,7 @@ def Group_Bidding(request):
             GroupDetail = UserGroup.objects.filter(Q(biddingdate__isnull=True) | Q(biddingdate__lte = datetime.datetime.today())  ,
             Q(groupStatus=5) | Q(groupStatus = 15), createBy = userid )
             serializer = StatEndGroupUserSerializer(GroupDetail, many = True)
-            return Response({'data':serializer.data,'Response' :True,'Message' :''},status=200)
+            return Response({'data':serializer.data,'Response' :True,'Message' :'Gruop Bidding start succesfully'},status=200)
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False},status=200)
     except Exception as e:
@@ -754,7 +754,8 @@ def Group_Payments(request):
             GroupPaymentHistorydetails = GroupPaymentHistory.objects.get(id=id,Mobilenumber = UserMobileNumber)
             usergrupdetail  = UserGroup.objects.get(id=GroupPaymentHistorydetails.UserGroup_id)
             groupbiddingdetails = GroupBidding.objects.filter(UserGroup = usergrupdetail,Cyclenumber=int(usergrupdetail.biddgingCycle)).aggregate(id=Max('pk'))
-            groupcreatemobile = User.objects.get(username = usergrupdetail.createBy)
+            
+            groupcreatemobile = User.objects.get(id = usergrupdetail.createBy)
             loginusermobie = User.objects.get(id = userid)    
             recivedflag = 0
             
@@ -777,7 +778,7 @@ def Group_Payments(request):
             if len(serializer.data) < 1: 
                 return Response({'data':serializer.data,'Response' :False,'Message' :'Group Payments list not found'},status=200)
             else:
-                return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
+                return Response({'data':serializer.data,'Response' :True,'Message':'Group payments successfully'},status=200)
            
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False})
