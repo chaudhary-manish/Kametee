@@ -767,11 +767,12 @@ def Group_Payments(request):
                 totalAmountDue = int(float(GroupPaymentHistorydetails.ActualAmount)) - int(float(PaidAmount))
                 GroupPaymentHistory.objects.filter(id=id,GroupBidding_id=groupbiddingdetails['id'],Mobilenumber = UserMobileNumber).update(AmountPaid=PaidAmount,AmountDue=totalAmountDue,
                                                 IsReceived = recivedflag ) 
-                return Response({'data':'','Response' :False,'Message' :'Group Payments list not found'},status=200)           
+                           
             
             if recivedflag == 1:
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding_id = groupbiddingdetails['id'],Status =5)
-                serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)       
+                serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)   
+                return Response({'data':'','Response' :False,'Message' :groupbiddingdetails['id']},status=200)    
             else:
                 mobilenumber =User.objects.get(id=userid)
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding = groupbiddingdetails['id'],Status =5,
