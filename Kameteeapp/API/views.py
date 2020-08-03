@@ -766,19 +766,17 @@ def Group_Payments(request):
             if GroupPaymentHistorydetails.Status == 5:
                 totalAmountDue = int(float(GroupPaymentHistorydetails.ActualAmount)) - int(float(PaidAmount))
                 GroupPaymentHistory.objects.filter(id=id,GroupBidding_id=groupbiddingdetails['id'],Mobilenumber = UserMobileNumber).update(AmountPaid=PaidAmount,AmountDue=totalAmountDue,
-                                                IsReceived = recivedflag ) 
-                           
+                                                IsReceived = recivedflag )                           
             
-            if recivedflag == 1:
-                GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding_id = groupbiddingdetails['id'],Status =5)
-                serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)                     
-            else:
-                mobilenumber =User.objects.get(id=userid)
-                GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding = groupbiddingdetails['id'],Status =5,
-                Mobilenumber  = int(mobilenumber.username) )
-                serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)
-            
-            if GroupPaymentHistorydetails.Status == 5: 
+                if recivedflag == 1:
+                    GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding_id = groupbiddingdetails['id'],Status =5)
+                    #serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)                     
+                else:
+                    mobilenumber =User.objects.get(id=userid)
+                    GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding = groupbiddingdetails['id'],Status =5,
+                    Mobilenumber  = int(mobilenumber.username) )
+                    #serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)
+                      
                 return Response({'data':'','Response' :True,'Message':'Group payments successfully'},status=200)
             else:               
                 return Response({'data':'','Response' :False,'Message' :'Group Payments list not found'},status=200)
