@@ -771,18 +771,17 @@ def Group_Payments(request):
             
             if recivedflag == 1:
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding_id = groupbiddingdetails['id'],Status =5)
-                serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)   
-                return Response({'data':'','Response' :False,'Message' :groupbiddingdetails['id']},status=200)    
+                serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)                     
             else:
                 mobilenumber =User.objects.get(id=userid)
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding = groupbiddingdetails['id'],Status =5,
                 Mobilenumber  = int(mobilenumber.username) )
                 serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails, many = True)
             
-            if len(serializer.data) < 1: 
-                return Response({'data':serializer.data,'Response' :False,'Message' :'Group Payments list not found'},status=200)
-            else:
-                return Response({'data':serializer.data,'Response' :True,'Message':'Group payments successfully'},status=200)
+            if GroupPaymentHistorydetails.Status == 5: 
+                return Response({'data':'','Response' :True,'Message':'Group payments successfully'},status=200)
+            else:               
+                return Response({'data':'','Response' :False,'Message' :'Group Payments list not found'},status=200)
            
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False})
