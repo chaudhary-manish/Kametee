@@ -766,8 +766,7 @@ def Group_Payments(request):
             if GroupPaymentHistorydetails.Status == 5:
                 totalAmountDue = int(GroupPaymentHistorydetails.ActualAmount) - int(PaidAmount)
                 GroupPaymentHistory.objects.filter(id=id,GroupBidding_id=groupbiddingdetails['id'],Mobilenumber = UserMobileNumber).update(AmountPaid=PaidAmount,AmountDue=totalAmountDue,
-                                                IsReceived = recivedflag )
-            
+                                                IsReceived = recivedflag )            
             
             if recivedflag == 1:
                 GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding_id = groupbiddingdetails['id'],Status =5)
@@ -786,7 +785,7 @@ def Group_Payments(request):
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False})
     except Exception as e:
-        return Response({'Response' :False,'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
+        return Response({'Response' :False,'ErrorMessage' : 'Something Went worng either token or variable name format','Message':str(e)})
 
     
 
