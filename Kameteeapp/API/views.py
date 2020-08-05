@@ -49,14 +49,15 @@ def Send_message(SMSTemplate,Phone_number,var1 ='',var2='',var3='',var4='',var5=
     elif SMSTemplate == 'UserRecivedVerification':
         payloads = json.dumps({"From": "KameTi","To": Phone_number,"VAR1": var1, "TemplateName": "UserRecivedVerification"})
   
-    if payloads is not None:
-        header = {"content-type": "application/json"}
-        conn.request("POST", "/API/V1/5e31f7cf-8dd5-11ea-9fa5-0200cd936042/ADDON_SERVICES/SEND/TSMS", payloads)
-        res = conn.getresponse()
-        data = res.read()        
-        return data.decode("utf-8")
-    else:
-        return True
+    return True
+    # if payloads is not None:
+    #     header = {"content-type": "application/json"}
+    #     conn.request("POST", "/API/V1/5e31f7cf-8dd5-11ea-9fa5-0200cd936042/ADDON_SERVICES/SEND/TSMS", payloads)
+    #     res = conn.getresponse()
+    #     data = res.read()        
+    #     return data.decode("utf-8")
+    # else:
+    #     return True
 
 # OTP generate to send for number verificaiton
 @api_view(['POST'])
@@ -214,7 +215,7 @@ class GroupUser(generics.GenericAPIView,
         return Response({"Message":"Please use another method for retrive data",'Response' :True},status=200)
     def post(self, request):
         self.create(request)
-        return Response({"Message":"data Save successfully",'Response' :True},status=200)
+        return Response({"Message":"Group Created successfully",'Response' :True},status=200)
 
     def perform_create(self, serializer):
         usergroup = serializer.save(createBy=self.request.user)
@@ -225,7 +226,7 @@ class GroupUser(generics.GenericAPIView,
 
     def put(self, request, id=None):
         self.update(request, id)
-        return Response({"Message":"data updated successfully",'Response' :True},status=200)
+        return Response({"Message":"Group updated successfully",'Response' :True},status=200)
 
     def perform_update(self, serializer):
         serializer.save(created_by=self.request.user)        
