@@ -289,17 +289,22 @@ def groupmember_update(request):
             Mobilenumber = data['MobileNumber']
             UserName = data['UserName']
             status = UserGroup.objects.get(id__in=GroupMember.objects.filter(id=id).values('UserGroup_id')).groupStatus
-            UsergroupID = GroupMember.objects.filter(id=id).values('UserGroup_id')[0]  
-            checkuserexist  = GroupMember.objects.filter(UserGroup_id=UsergroupID['UserGroup_id'],Mobilenumber = Mobilenumber).exclude(UserName=UserName).count()
-
-            checkuserexistname  = GroupMember.objects.filter(UserGroup_id=UsergroupID['UserGroup_id'],UserName=UserName).exclude(Mobilenumber = Mobilenumber).count()
+            UsergroupID = GroupMember.objects.filter(id=id).values('UserGroup_id')[0] 
+            groupmemberdetails =  GroupMember.objects.get(id=id)                  
            
             if status == 5:
                 if request.method == 'PUT':
-                    if checkuserexist > 0 or  checkuserexistname > 0 :
-                          return Response({'Message' :"Name or Mobile Number already exist for this group ",'Response' :True},status=200)
-                    else:
-                        GroupMemberupdate =  GroupMember.objects.filter(id=id).update(Mobilenumber=Mobilenumber,UserName=UserName)
+                    if groupmemberdetails.UserName != UserName:
+                        checkuserexistname  = GroupMember.objects.filter(UserGroup_id=UsergroupID['UserGroup_id'],UserName=UserName).exclude(Mobilenumber = Mobilenumber).count()
+                        if checkuserexistname > 0:
+                            return Response({'Message' :"Name  already exist for this group ",'Response' :True},status=200)
+
+                    if int(groupmemberdetails.Mobilenumber) != int(Mobilenumber):
+                        checkuserexist  = GroupMember.objects.filter(UserGroup_id=UsergroupID['UserGroup_id'],Mobilenumber = Mobilenumber).exclude(UserName=UserName).count()
+                        if checkuserexist > 0:
+                            return Response({'Message' :"Mobile Number  already exist for this group ",'Response' :True},status=200)
+                              
+                    GroupMemberupdate =  GroupMember.objects.filter(id=id).update(Mobilenumber=Mobilenumber,UserName=UserName)
                     return Response({'Message' :"User update successfully ",'Response' :True},status=200)
                 else:
                     GroupMember.objects.filter(id=id).delete()
