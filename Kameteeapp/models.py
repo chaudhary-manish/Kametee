@@ -92,6 +92,7 @@ class GroupPaymentHistory(models.Model):
     AmountDue = models.DecimalField(max_digits=8, decimal_places=2,null=True,default=0)  
     Cyclenumber = models.IntegerField(null=True,default=1)     
     startDate=models.DateField(default=timezone.now)
+    RecivedDate=models.DateField(blank=True, default=timezone.now, null=True)
     IsReceived = models.IntegerField(default=0)
     Status = models.IntegerField(default=5)
     created_at = models.DateTimeField(default=timezone.now)

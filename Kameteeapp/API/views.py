@@ -550,7 +550,7 @@ def Start_Group_Bidding(request):
                 UserGroup.objects.filter(id=id,createBy = userid ).update(groupStatus = 15,biddingflag=0)
                 Groupdetail = UserGroup.objects.get(id=id,createBy = userid )
                 serializer = StatEndGroupUserSerializer(Groupdetail)
-                return Response({'data':serializer.data,'Response' :True,'Message':''},status=200) 
+                return Response({'data':serializer.data,'Response' :True,'Message':'Group bidding start successfully'},status=200) 
             else:
                 return Response({'Message' :"Previous bidding already in progress",'Response' :True})
         else:
@@ -772,7 +772,7 @@ def Group_Payments(request):
             if GroupPaymentHistorydetails.Status == 5:
                 totalAmountDue = int(float(GroupPaymentHistorydetails.ActualAmount)) - int(float(PaidAmount))
                 GroupPaymentHistory.objects.filter(id=id,GroupBidding_id=groupbiddingdetails['id'],Mobilenumber = UserMobileNumber).update(AmountPaid=PaidAmount,AmountDue=totalAmountDue,
-                                                IsReceived = recivedflag )                           
+                                                IsReceived = recivedflag ,RecivedDate= datetime.datetime.today())                           
             
                 if recivedflag == 1:
                     GroupPaymentHistorydetails = GroupPaymentHistory.objects.filter(GroupBidding_id = groupbiddingdetails['id'],Status =5)
