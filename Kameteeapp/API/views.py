@@ -476,7 +476,7 @@ def Manage_Group_ByStatus(request):
         elif status == 15:
             statusname = 'Running'
         elif status == 20:
-            statusname = 'Running'
+            statusname = 'Finished'
         else:
             statusname = 'Terminated'  
         userid = Token.objects.get(key=token).user_id
