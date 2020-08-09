@@ -285,15 +285,15 @@ def groupmember_update(request):
         token = data['token']
         id  = data['GroupMemberID']
         userid = Token.objects.get(key=token).user_id
-        if userid is not None:
-            Mobilenumber = data['MobileNumber']
-            UserName = data['UserName']
+        if userid is not None:         
             status = UserGroup.objects.get(id__in=GroupMember.objects.filter(id=id).values('UserGroup_id')).groupStatus
             UsergroupID = GroupMember.objects.filter(id=id).values('UserGroup_id')[0] 
-            groupmemberdetails =  GroupMember.objects.get(id=id)                  
+            groupmemberdetails =  GroupMember.objects.get(id=id)                 
            
             if status == 5:
                 if request.method == 'PUT':
+                    Mobilenumber = data['MobileNumber']
+                    UserName = data['UserName']
                     if groupmemberdetails.UserName != UserName:
                         checkuserexistname  = GroupMember.objects.filter(UserGroup_id=UsergroupID['UserGroup_id'],UserName=UserName).exclude(Mobilenumber = Mobilenumber).count()
                         if checkuserexistname > 0:
@@ -314,7 +314,7 @@ def groupmember_update(request):
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :True})
     except Exception as e:
-        return Response({'Response' :False,'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
+        return Response({'Response' :False,'ErrorMessage' : 'Something Went worng either token or variable name format','Message':str(e)})
 
 
 @api_view(['GET'])
@@ -883,7 +883,7 @@ def Group_Payments_History(request):
         
             serializer = GroupPaymentHistorySerializer(GroupPaymentHistorydetails,many=True)
             if len(serializer.data) < 1: 
-                return Response({'data':serializer.data,'Response' :False,'Message' :'Payments history not found'},status=200)
+                return Response({'data':'','Response' :False,'Message' :'Payments history not found'},status=200)
             else:
                 return Response({'data':serializer.data,'Response' :True,'Message':''},status=200)
            
