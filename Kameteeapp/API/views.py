@@ -475,8 +475,10 @@ def Manage_Group_ByStatus(request):
             statusname = 'Active'
         elif status == 15:
             statusname = 'Running'
+        elif status == 20:
+            statusname = 'Running'
         else:
-            statusname = 'Finished'  
+            statusname = 'Terminated'  
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             GroupDetail = UserGroup.objects.filter(groupStatus=status, createBy = userid).order_by('biddingdate')
