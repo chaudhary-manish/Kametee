@@ -49,15 +49,15 @@ def Send_message(SMSTemplate,Phone_number,var1 ='',var2='',var3='',var4='',var5=
     elif SMSTemplate == 'UserRecivedVerification':
         payloads = json.dumps({"From": "KameTi","To": Phone_number,"VAR1": var1, "TemplateName": "UserRecivedVerification"})
   
-    return True
-    # if payloads is not None:
-    #     header = {"content-type": "application/json"}
-    #     conn.request("POST", "/API/V1/5e31f7cf-8dd5-11ea-9fa5-0200cd936042/ADDON_SERVICES/SEND/TSMS", payloads)
-    #     res = conn.getresponse()
-    #     data = res.read()        
-    #     return data.decode("utf-8")
-    # else:
-    #     return True
+  
+    if payloads is not None:
+        header = {"content-type": "application/json"}
+        conn.request("POST", "/API/V1/5e31f7cf-8dd5-11ea-9fa5-0200cd936042/ADDON_SERVICES/SEND/TSMS", payloads)
+        res = conn.getresponse()
+        data = res.read()        
+        return data.decode("utf-8")
+    else:
+        return True
 
 # OTP generate to send for number verificaiton
 @api_view(['POST'])
