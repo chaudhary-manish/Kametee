@@ -278,7 +278,7 @@ def groupmember_list(request):
 
 
 #update gruop member list when group is in open state ie: 5
-@api_view(['PUT','DELETE'])
+@api_view(['PUT','POST'])
 def groupmember_update(request):
     data=request.data
     try:
