@@ -230,7 +230,7 @@ class GroupPaymentHistorySerializer(serializers.ModelSerializer):
         fields = ('id', 'GroupBidding',
                 'Mobilenumber', 'UserName', 'ActualAmount',
                 'AmountPaid', 'AmountDue', 'Cyclenumber',
-                'IsReceived','Status')
+                'IsReceived','Status','RecivedDate')
 
 
 class GroupAmountRecivedSerializer(serializers.ModelSerializer):
