@@ -471,13 +471,19 @@ def Manage_Group_ByStatus(request):
         status = int(request.GET.get('status')) 
         if status is None:
             status = 10
+        if status == 10:
+            statusname = 'Active'
+        elif status == 15:
+            statusname = 'Running'
+        else:
+            statusname = 'Finished'  
         userid = Token.objects.get(key=token).user_id
         if userid is not None:
             GroupDetail = UserGroup.objects.filter(groupStatus=status, createBy = userid).order_by('biddingdate')
             serializer = StatEndGroupUserSerializer(GroupDetail, many = True)
             
             if len(serializer.data) < 1:               
-                return Response({'data':serializer.data,'IsAdmin':True,'Response' :False,'Message' :'Your are not admin to any group'},status=200)
+                return Response({'data':serializer.data,'IsAdmin':True,'Response' :False,'Message' :'Your are not admin to ' + str(statusname) + ' group'},status=200)
             else:
                 return Response({'data':serializer.data,'IsAdmin':True,'Response' :True,'Message' :''},status=200)
         else:
