@@ -976,8 +976,12 @@ def Update_UserDetails(request):
             AlternateMobileNumber = data['AlternateMobileNumber']                  
             DateofBirth = data['DateofBirth']   
             userid = Token.objects.get(key=token).user_id
-            user = User.objects.get(id=userid)                    
-            UserDetails.objects.filter(User_id=userid).update(AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
+            user = User.objects.get(id=userid)  
+            if len(AlternateMobileNumber) > 6:
+                UserDetails.objects.filter(User_id=userid).update(AlternateMobileNumber=AlternateMobileNumber,DateofBirth=DateofBirth)
+            else:
+                 UserDetails.objects.filter(User_id=userid).update(AlternateMobileNumber=0,DateofBirth=DateofBirth)
+                
             UserDetailsupdate = UserDetails.objects.get(User_id=userid)            
             firstname = data['first_name']
             lastname = data['last_name']
