@@ -137,10 +137,15 @@ def RegisterUser(request):
 def logout_user(request):
     data=request.data
     token = data['token']
-    token_destroy = Token.objects.get(key=token)
-    token_destroy.delete()
-    logout(request)
-    return  Response({'Response' : True,'Message' :'User Logout Successfully'})
+    checkuserid = Token.objects.filter(key=token).count()
+    if checkuserid > 0:
+        userid = Token.objects.get(key=token).user_id
+        token_destroy = Token.objects.get(key=token)
+        token_destroy.delete()
+        logout(request)
+        return  Response({'Response' : True,'Message' :'User Logout Successfully'})
+    else:
+        return Response({'Message' :'Session expired please login again','ErrorMessage' : 'Token Not found in our system','Response' :False},status=200)
 
 # login user 
 @api_view(['POST'])
