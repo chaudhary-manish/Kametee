@@ -321,8 +321,9 @@ def groupmember_update(request):
 def Get_Group_forChat(request):  
     try:
         token = request.GET.get('token')        
-        userid = Token.objects.get(key=token).user_id
-        if userid is not None:
+        checkuserid = Token.objects.filter(key=token).count()
+        if checkuserid > 0:
+            userid = Token.objects.get(key=token).user_id
             usermobilenumber = User.objects.get(id=userid).username            
             GroupDetail = UserGroup.objects.filter(groupStatus__in =(10,15),id__in =
                           GroupMember.objects.filter(Mobilenumber = usermobilenumber).values('UserGroup'))
@@ -333,7 +334,7 @@ def Get_Group_forChat(request):
             else:
                 return Response({'data':serializer.data,'Response' :True,'Message' :''},status=200)
         else:
-            return Response({'Message' : 'Token Not found in our system','Response' :True},status=200)
+            return Response({'Message' :'Session expired please login again','ErrorMessage' : 'Token Not found in our system','Response' :False},status=200)
     except Exception as e:
         return Response({'Response' :False,'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
 
@@ -441,8 +442,10 @@ def Get_Group_ByStatus(request):
         status = int(request.GET.get('status'))       
         if status is None:
             status = 10
-        userid = Token.objects.get(key=token).user_id
-        if userid is not None:
+        
+        checkuserid = Token.objects.filter(key=token).count()
+        if checkuserid > 0:
+            userid = Token.objects.get(key=token).user_id
             usermobilenumber = User.objects.get(id=userid).username            
             GroupDetail = UserGroup.objects.filter(groupStatus=status,id__in =
                           GroupMember.objects.filter(Mobilenumber = usermobilenumber).values('UserGroup')).order_by('biddingdate')
@@ -458,7 +461,7 @@ def Get_Group_ByStatus(request):
             else:
                 return Response({'data':serializer.data,'IsAdmin':False,'Response' :True,'Message' :''},status=200)
         else:
-            return Response({'Message' : 'Token Not found in our system','Response' :True},status=200)
+            return Response({'Message' :'Session expired please login again','ErrorMessage' : 'Token Not found in our system','Response' :False},status=200)
     except Exception as e:
         return Response({'Response' :False,'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
 
@@ -479,8 +482,9 @@ def Manage_Group_ByStatus(request):
             statusname = 'Finished'
         else:
             statusname = 'Terminated'  
-        userid = Token.objects.get(key=token).user_id
-        if userid is not None:
+        checkuserid = Token.objects.filter(key=token).count()
+        if checkuserid > 0:
+            userid = Token.objects.get(key=token).user_id
             GroupDetail = UserGroup.objects.filter(groupStatus=status, createBy = userid).order_by('biddingdate')
             serializer = StatEndGroupUserSerializer(GroupDetail, many = True)
             
@@ -489,7 +493,7 @@ def Manage_Group_ByStatus(request):
             else:
                 return Response({'data':serializer.data,'IsAdmin':True,'Response' :True,'Message' :''},status=200)
         else:
-            return Response({'Message' : 'Token Not found in our system','Response' :False},status=200)
+            return Response({'Message' :'Session expired please login again','ErrorMessage' : 'Token Not found in our system','Response' :False},status=200)
     except Exception as e:
         return Response({'Response' :False,'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
 
@@ -999,14 +1003,19 @@ def Get_UserDetails(request):
     data = request.data
     try:        
         token = request.GET.get('token')
-        userid = Token.objects.get(key=token).user_id          
-        Userdata = User.objects.get(id = userid)
-        userprofiledetails = UserDetails.objects.filter(User=Userdata)
-        serializer = ProfileSerializer(Userdata)
-        UserDetailsupdate = UserDetails.objects.get(User_id=userid)
-        serializerprofile = UserDetailsSerializer(UserDetailsupdate)
-        return Response({'data':serializer.data,'Profiledata':serializerprofile.data,'Response' :True,'Message':''},status=200)
-    
+        checkuserid = Token.objects.filter(key=token).count()
+        if checkuserid > 0:
+            userid = Token.objects.get(key=token).user_id
+            userid = Token.objects.get(key=token).user_id          
+            Userdata = User.objects.get(id = userid)
+            userprofiledetails = UserDetails.objects.filter(User=Userdata)
+            serializer = ProfileSerializer(Userdata)
+            UserDetailsupdate = UserDetails.objects.get(User_id=userid)
+            serializerprofile = UserDetailsSerializer(UserDetailsupdate)
+            return Response({'data':serializer.data,'Profiledata':serializerprofile.data,'Response' :True,'Message':''},status=200)
+        else:
+            return Response({'Message' :'Session expired please login again','ErrorMessage' : 'Token Not found in our system','Response' :False},status=200)
+
     except Exception as e:
         return Response({'Response' :False,'Message' : 'Something Went worng either token or variable name format','ErrorMessage':str(e)})
 
