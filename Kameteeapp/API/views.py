@@ -858,8 +858,10 @@ def Send_Amount(request):
                 UserGroupDetails=  UserGroup.objects.get(id=id,createBy=userid)
                 biddingcycle = UserGroupDetails.biddgingCycle                            
                 groupbiddingDetail = GroupBidding.objects.filter(UserGroup = UserGroupDetails,Cyclenumber=biddingcycle)[0]
-                
-                Amountdetails = AmountRecived(UserGroup = UserGroupDetails,ActualAmount= groupbiddingDetail.biddingAmount ,ActualRecived= groupbiddingDetail.biddingAmount ,
+                totalbiddingamount = int(UserGroupDetails.usercount * UserGroupDetails.AmountPerUser)
+                lossamount  = int(totalbiddingamount - groupbiddingDetail.biddingAmount)
+                Amountdetails = AmountRecived(UserGroup = UserGroupDetails,ActualAmount= totalbiddingamount ,MinlossAmount= lossamount ,
+                                BiddingAmount= groupbiddingDetail.biddingAmount ,ActualRecived= groupbiddingDetail.biddingAmount ,
                                 Cyclenumber = biddingcycle,RevicerName = groupbiddingDetail.selectedName,Amountsend =AmountSendtoUser,
                                 Recivermobile =groupbiddingDetail.SelectedMobileNumber ,RecivedDate= datetime.datetime.today())
                 Amountdetails.save()

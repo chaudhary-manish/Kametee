@@ -18,7 +18,7 @@ class RegisterSerializer(serializers.Serializer):
         username = data.get("MobileNumber", "")
         Firstname = data.get("Firstname", "")
         LastName = data.get("LastName", "")
-        Email = 'chaudhary94rc@gmail.com'
+        Email = ''
         Password = data.get("Password", "")
         userexist = User.objects.filter(username = username).count()
 
@@ -237,7 +237,7 @@ class GroupAmountRecivedSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AmountRecived
-        fields = ('id', 'ActualAmount',
+        fields = ('id', 'ActualAmount','BiddingAmount','MinlossAmount',
                 'ActualRecived', 'Cyclenumber', 'Amountsend',
                 'RevicerName', 'Recivermobile', 'RecivedDate')
 
