@@ -39,7 +39,7 @@ def Send_message(SMSTemplate,Phone_number,var1 ='',var2='',var3='',var4='',var5=
     elif SMSTemplate == 'New-Registration':
         payloads = json.dumps({"From": "KameTi","To": Phone_number,"VAR1": var1, "TemplateName": "New-Registration"}) 
     elif SMSTemplate == 'groupregistration':
-        payloads = json.dumps({"From": "KameTi","To": Phone_number,"VAR1": var1,"VAR2": var2 ,"VAR3": var3 ,"TemplateName": "groupregistration"})
+        payloads = json.dumps({"From": "KameTi","To": Phone_number,"VAR1": var1,"VAR2": var2 ,"VAR3": var3 ,"VAR4": var4 ,"TemplateName": "groupregistration"})
     elif SMSTemplate == 'Startbiddingalert':
         payloads = json.dumps({"From": "KameTi","To": Phone_number,"VAR1": var1, "VAR2": var2 ,"VAR3": var3 ,"TemplateName": "Startbiddingalert"})
     elif SMSTemplate == 'SelectedbiddingAlert':
@@ -199,7 +199,7 @@ class GroupUser(generics.GenericAPIView,
                     mixins.CreateModelMixin,
                     mixins.RetrieveModelMixin,
                     mixins.UpdateModelMixin,
-                    mixins.DestroyModelMixin):
+                    mixins.DestroyModelMixin):You
 
     authentication_classes = [TokenAuthentication, SessionAuthentication, BasicAuthentication]
     permission_classes = [IsAuthenticated]
@@ -227,7 +227,7 @@ class GroupUser(generics.GenericAPIView,
         Userdetail =  User.objects.get(username=self.request.user)
         GroupUser =GroupMember(UserGroup=usergroup,Mobilenumber=Userdetail.username,UserName=Userdetail.first_name,isAdmin =1)
         GroupUser.save()
-        Send_message('groupregistration',Userdetail.username,usergroup.groupname , str(usergroup.AmountPerUser) ,str(usergroup.startDate))        
+        Send_message('groupregistration',Userdetail.username,usergroup.groupname , str(usergroup.AmountPerUser),'You as Admin' ,str(usergroup.startDate))        
 
     def put(self, request, id=None):
         self.update(request, id)
@@ -253,9 +253,10 @@ def adduser_togroup(request):
             serializer = AddGroupUserSerializer(data=data,context={'user_id':userid})
             serializer.is_valid(raise_exception=True)
             usergroup =  UserGroup.objects.get(id=data['GroupID'])
+            adminuser =  User.objects.get(id = userid)
             GroupMemberlist = GroupMember.objects.filter(UserGroup_id=data['GroupID']).order_by('-isAdmin')
             serializer = GroupMemberSerializer(GroupMemberlist,many=True)
-            data = Send_message('groupregistration',userMobileno,usergroup.groupname , str(usergroup.AmountPerUser) ,str(usergroup.startDate))
+            data = Send_message('groupregistration',userMobileno,usergroup.groupname , str(usergroup.AmountPerUser),adminuser.username ,str(usergroup.startDate))
             return Response({'userlist' : "",'Response' : True,'Message':'User Add successfully'})
         else:
             return Response({'Message' : 'Token Not found in our system','Response' :False})
@@ -312,8 +313,12 @@ def groupmember_update(request):
                     GroupMemberupdate =  GroupMember.objects.filter(id=id).update(Mobilenumber=Mobilenumber,UserName=UserName)
                     return Response({'Message' :"User update successfully ",'Response' :True},status=200)
                 else:
-                    GroupMember.objects.filter(id=id).delete()
-                    return Response({'Message' :"User Deleted successfully ",'Response' :True},status=200)
+                    Totalcount = GroupMember.objects.filter(UserGroup=UsergroupID).count()
+                    if Totalcount > 1:
+                        GroupMember.objects.filter(id=id).delete()
+                        return Response({'Message' :"User Deleted successfully ",'Response' :True},status=200)
+                    else:
+                        return Response({'Message' :"Last User cant't be deleted ",'Response' :True},status=200)
             else:
                 return Response({'Message' :"Group no longer in open state",'Response' :True})
         else:
@@ -385,10 +390,13 @@ def Group_Start(request):
             GroupDetaildetails = UserGroup.objects.get(id=id,createBy = userid )
             if int(GroupDetaildetails.groupStatus) == 5 and int(GroupDetaildetails.biddingflag) == 0:
                 groupmembercount = GroupMember.objects.filter(UserGroup_id = id).count()
-                UserGroup.objects.filter(id=id,createBy = userid ).update(usercount=groupmembercount,groupStatus=10,biddgingCycle=1,biddingdate = datetime.datetime.today())
-                Groupdetail = UserGroup.objects.get(id=id,createBy = userid )
-                serializer = StatEndGroupUserSerializer(Groupdetail)
-                return Response({'data':serializer.data,'Response' :True,'Message':'Group start successfully'})   
+                if groupmembercount < 2:
+                    return Response({'Response' :True,'Message':'Group member should not be less than 2 '},status=200)  
+                else:
+                    UserGroup.objects.filter(id=id,createBy = userid ).update(usercount=groupmembercount,groupStatus=10,biddgingCycle=1,biddingdate = datetime.datetime.today())
+                    Groupdetail = UserGroup.objects.get(id=id,createBy = userid )
+                    serializer = StatEndGroupUserSerializer(Groupdetail)
+                    return Response({'data':serializer.data,'Response' :True,'Message':'Group start successfully'})   
             else:
                 return Response({'Message' :" User Group Already Start",'Response' :True},status=200) 
         else:
@@ -1062,7 +1070,7 @@ def Get_Terms_Condition(request):
                     7: Grievance Officer
                         In accordance with Information Technology Act 2000 and rules made there under, the name and contact details of the Grievance Officer are provided below: \n                       
                     Manish Chaudhary \n
-                    Kametee Pvt. Ltd.\n
+                    Groupions Pvt. Ltd.\n
                     Phone: +91 8279463818\n
                     Email: chaudhary94rc@gmail.com \n
                     C-603, Amarapali Empire, \n
