@@ -199,7 +199,7 @@ class GroupUser(generics.GenericAPIView,
                     mixins.CreateModelMixin,
                     mixins.RetrieveModelMixin,
                     mixins.UpdateModelMixin,
-                    mixins.DestroyModelMixin):You
+                    mixins.DestroyModelMixin):
 
     authentication_classes = [TokenAuthentication, SessionAuthentication, BasicAuthentication]
     permission_classes = [IsAuthenticated]
