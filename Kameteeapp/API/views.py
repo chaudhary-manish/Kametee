@@ -284,7 +284,7 @@ def groupmember_list(request):
 
 
 #update gruop member list when group is in open state ie: 5
-@api_view(['PUT','Delete'])
+@api_view(['PUT','Delete','POST'])
 def groupmember_update(request):
     data=request.data
     try:
@@ -313,8 +313,7 @@ def groupmember_update(request):
                     GroupMemberupdate =  GroupMember.objects.filter(id=id).update(Mobilenumber=Mobilenumber,UserName=UserName)
                     return Response({'Message' :"User update successfully ",'Response' :True},status=200)
                 else:
-                    Totalcount = GroupMember.objects.filter(UserGroup=UsergroupID['UserGroup_id']).count()                  
-                   
+                    Totalcount = GroupMember.objects.filter(UserGroup=UsergroupID['UserGroup_id']).count()                   
                     if Totalcount > 1:
                         GroupMember.objects.filter(id=id).delete()
                         return Response({'Message' :"User Deleted successfully ",'Response' :True},status=200)
