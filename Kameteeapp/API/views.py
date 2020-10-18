@@ -96,11 +96,11 @@ def Contact_Details(request):
             contactDetails.update( {'youtubelink' : 'https://www.youtube.com/'} )
             contactDetails.update( {'linkedlienlink' : 'https://www.linkedin.com/'} )
             contactDetails.update( {'instagramlink' : 'https://www.instagram.com/?hl=en'} )
-            contactDetails.update( {'enquiryemail' : 'chaudhary94rc@gmail.com'} )
-            contactDetails.update( {'techsupportemail' : 'chaudhary94rc@gmail.com'} )
-            contactDetails.update( {'contactNumber' : 8279463818} )
-            contactDetails.update( {'whatappNumber' : 9412289096} )
-            contactDetails.update( {'address' : 'C 603 Amrapali Empire Crossing rebublic'} )
+            contactDetails.update( {'enquiryemail' : 'kamiteeguide@gmail.com'} )
+            contactDetails.update( {'techsupportemail' : 'kamiteeguide@gmail.com'} )
+            contactDetails.update( {'contactNumber' : 8448153792} )
+            contactDetails.update( {'whatappNumber' : 8448153792} )
+            contactDetails.update( {'address' : 'Groupions Private Limited SiddharthNagar'} )
             contactDetails.update( {'Longitude' : '28.6343° N'} )
             contactDetails.update( {'Latitude' : '77.4455° E'} )
  
@@ -1071,10 +1071,10 @@ def Get_Terms_Condition(request):
                         In accordance with Information Technology Act 2000 and rules made there under, the name and contact details of the Grievance Officer are provided below: \n                       
                     Manish Chaudhary \n
                     Groupions Pvt. Ltd.\n
-                    Phone: +91 8279463818\n
-                    Email: chaudhary94rc@gmail.com \n
-                    C-603, Amarapali Empire, \n
-                    Crossing Republic, Ghaziabad \n            
+                    Phone: +91 8448153792\n
+                    Email: kamiteeguide@gmail.com \n
+                    Groupions Private Limited, \n
+                    Shohratgarh SiddharthNagar \n            
             """,
             'TermsCondition' : """\nIMPORTANT - READ THESE TERMS CAREFULLY BEFORE DOWNLOADING, INSTALLING OR USING THIS SOFTWARE. BY DOWNLOADING OR INSTALLING THIS SOFTWARE, YOU ACKNOWLEDGE THAT YOU HAVE READ THIS LICENSE AGREEMENT, THAT YOU UNDERSTAND IT, AND THAT YOU AGREE TO BE BOUND BY ITS TERMS. IF YOU ARE ENTERING INTO THIS AGREEMENT ON BEHALF OF A COMPANY OR OTHER LEGAL ENTITY, YOU REPRESENT THAT YOU HAVE THE AUTHORITY TO BIND SUCH ENTITY AND ITS AFFILIATES TO THESE TERMS AND CONDITIONS, IN WHICH CASE THE TERMS "YOU" OR "YOUR" SHALL REFER TO ITS AFFILIATES. IF YOU DO NOT HAVE SUCH AUTHORITY,OR IF YOU DO NOT AGREE WITH THESE TERMS AND CONDITIONS, YOU MUST NOT DOWNLOAD OR INSTALL THIS SOFTWARE.\n
                             . Grant of Software License for Free Trial Period\n
